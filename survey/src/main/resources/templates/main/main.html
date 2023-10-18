@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lagn="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <link th:href="@{/css/navbar.css}" rel="stylesheet">
+<style>
+.menu_div{
+padding: 10px;
+}
+.menu_title{
+text-align: center;
+ background-color: #ff7767;
+ background: linear-gradient(to left, rgb(255, 77, 46), rgb(255, 155, 47));
+/*background: linear-gradient(to left, rgb(28, 70, 40), rgb(170, 155, 47));*/
+border-radius: 15px;
+}
+.menu_title>a{
+color: aliceblue;
+font-size: medium;
+font-weight: bolder;
+}
+a{
+color: black;
+}
+a:hover {
+text-decoration: none;
+}
+.text-right-p{
+  text-align: right;
+}
+</style>
+</head>
+<body>
+<th:block th:replace="fragments/navbar.html::navbarFragment"/>
+<div class="container">
+  <div class="row">
+    <div class="menu_div col-6">
+      <table class="table table-hover">
+        <thead>
+          <th class="menu_title table-info"><a th:href="@{/survey/list}">가장 많이 조회된 설사 TOP5</a></th>
+        </thead>
+        <tbody>
+        <tr th:each="highView : ${main.highViews}">
+          <th scope="row">
+            <p>
+              <sup th:text="'TOP' + ${highViewStat.index + 1}"></sup>
+              <sup th:text="${highView.surveyHit}" class="badge badge-pill badge-danger"></sup>
+            </p>
+            <p>
+              <a th:if="${!highView.status}" th:text="${highView.surveyTitle}"
+                 th:href="@{/survey/detail/{surveyNo}(surveyNo=${highView.surveyNo})}" style="text-decoration: none" class="main-a"></a>
+              <a th:if="${highView.status}" th:text="${highView.surveyTitle}"
+                 th:href="@{/survey/result/{surveyNo}(surveyNo=${highView.surveyNo})}"style="text-decoration: none" class="main-a"></a>
+            </p>
+            <p class="text-right-p">
+              <sup th:text="${highView.memberNickname}" th:class="${highView.memberNickname == '설사킹isADMIN'} ? 'badge badge-success' : 'badge badge-info'"></sup>
+              <sup th:text="${highView.time}"></sup>
+            </p>
+          </th>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="menu_div col-6">
+      <table class="table table-hover">
+        <thead>
+        <th class="menu_title table-info"><a th:href="@{/survey/list}">가장 많이 참여한 설사 TOP5</a></th>
+        </thead>
+        <tbody>
+          <tr th:each="popularView : ${main.popularViews}">
+            <th scope="row">
+              <p>
+                <sup th:text="'TOP' + ${popularViewStat.index + 1}"></sup>
+                <sup th:text="${popularView.resultCount} + '명이 참여했습니다.'" class="badge badge-pill badge-primary time-span"></sup>
+              </p>
+              <p>
+                <a th:if="${!popularView.status}" th:text="${popularView.surveyTitle}"
+                   th:href="@{/survey/detail/{surveyNo}(surveyNo=${popularView.surveyNo})}" style="text-decoration: none" class="main-a"></a>
+                <a th:if="${popularView.status}" th:text="${popularView.surveyTitle}"
+                   th:href="@{/survey/result/{surveyNo}(surveyNo=${popularView.surveyNo})}"style="text-decoration: none" class="main-a"></a>
+              </p>
+              <p class="text-right-p">
+                <sub th:text="${popularView.memberNickname}" th:class="${popularView.memberNickname == '설사킹isADMIN'} ? 'badge badge-success' : 'badge badge-info'"></sub>
+                <sub th:text="${popularView.time}"></sub>
+              </p>
+            </th>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="menu_div col-6">
+      <table class="table table-hover">
+        <thead>
+        <th class="menu_title table-info"><a th:href="@{/survey/list}">신상 설사</a></th>
+        </thead>
+        <tbody>
+        <tr th:each="latelySurvey : ${main.latelySurvey}">
+          <th scope="row">
+            <p>
+              <sup th:text="${latelySurvey.time}"></sup>
+              <sup th:text="${latelySurvey.memberNickname}" th:class="${latelySurvey.memberNickname == '설사킹isADMIN'} ? 'badge badge-success' : 'badge badge-info'"></sup>
+            </p>
+            <p>
+              <a th:if="${!latelySurvey.status}" th:text="${latelySurvey.surveyTitle}"
+                 th:href="@{/survey/detail/{surveyNo}(surveyNo=${latelySurvey.surveyNo})}" style="text-decoration: none" class="main-a"></a>
+              <a th:if="${latelySurvey.status}" th:text="${latelySurvey.surveyTitle}"
+                 th:href="@{/survey/result/{surveyNo}(surveyNo=${latelySurvey.surveyNo})}"style="text-decoration: none" class="main-a"></a>
+            </p>
+            <p style="text-align: right">
+              <sub th:text="'참여 기간 '+${latelySurvey.surveyDate}+'~'+${latelySurvey.surveyEndDate}" class="badge badge-warning "></sub>
+            </p>
+          </th>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="menu_div col-6">
+      <table class="table table-hover">
+        <thead>
+          <th class="menu_title table-info"><a th:href="@{/notice/list}">공지사항</a></th>
+        </thead>
+        <tbody>
+          <tr th:each="notice : ${main.noticeList}">
+            <th scope="row">
+              <p>
+                <sup th:text="${notice.memberNickname}" th:class="${notice.memberNickname == '설사킹isADMIN'} ? 'badge badge-success' : 'badge badge-info'"></sup>
+              </p>
+              <p>
+                <a th:text="${notice.boardTitle}" th:href="@{/notice/detail/{boardNo}(boardNo=${notice.boardNo})}"style="text-decoration: none" class="main-a"></a>
+              </p>
+              <p>
+                <sup th:text="${notice.time}"></sup>
+                <sup th:text="${notice.boardHit}" class="badge badge-pill badge-danger"></sup>
+              </p>
+            </th>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<footer>
+  <div class="container">
+    <div class="blank_div"></div>
+    <h3>TAKE YOUR SURVEY!</h3>
+    <div class="blank_div"></div>
+  </div>
+</footer>
+<script>
+$(document).ready(function() {
+  $(".main-a").each(function() {
+    let maxTextLength = 30;
+    let text = $(this).text();
+
+    if (text.length > maxTextLength) {
+      let truncatedText = text.substring(0, maxTextLength) + "...";
+      $(this).text(truncatedText);
+    }
+  });
+});
+</script>
+</body>
+</html>
