@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.js"></script>
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.min.css" />
+    <link th:href="@{/css/navbar.css}" rel="stylesheet">
+<style>
+h2{
+text-align: center;
+margin-top: 30px;
+margin-bottom: 30px;
+}
+table-text-center{
+text-align: center;
+vertical-align: middle;
+}
+#button-group{
+text-align: center;
+margin-top: 25px;
+margin-bottom: 25px;
+}
+</style>
+</head>
+<body>
+<th:block th:replace="fragments/navbar.html::navbarFragment"/>
+<div class="container">
+    <h2>공지사항</h2>
+    <table class="table">
+        <tbody>
+            <tr>
+                <th scope="row" class="table-text-center">작성자</th>
+                <th th:text="${notice.memberNickname}" scope="row" class="table-text-center"></th>
+                <th scope="row" class="table-text-center">조회수</th>
+                <th th:text="${notice.boardHit}" scope="row" class="table-text-center"></th>
+                <th scope="row" class="table-text-center">작성날짜</th>
+                <th th:if="${notice.boardUpdate == null}" scope="row" class="table-text-center">
+                    <sup th:text="${notice.time}"></sup>
+                    <span th:text="${notice.boardDate}" class="table-text-center"></span>
+                </th>
+                <th th:if="${notice.boardUpdate != null}" scope="row" class="table-text-center">
+                    <span th:text="${notice.time}"></span>
+                    <span th:text="${notice.boardUpdate}" class="table-text-center"></span>
+                </th>
+            </tr>
+            <tr>
+                <th scope="row" class="table-text-center">제목</th>
+                <th th:text="${notice.boardTitle}" scope="row" colspan="5" class="table-text-center"></th>
+                <input id="boardContent" type="hidden" th:value="${notice.boardContent}">
+            </tr>
+            <tr>
+                <th id="content" scope="row" colspan="6"></th>
+            </tr>
+        </tbody>
+    </table>
+    <div id="button-group" class="container">
+        <div class="col-12" th:if="${session.loginMember != null && session.loginMember.memberRole == 'A'}">
+            <a th:if="${pageInfo.searchContent != 'null'}" th:href="@{/notice/list/(page=${pageInfo.page},searchType=${pageInfo.searchType},searchContent=${pageInfo.searchContent})}" class="btn btn-warning col-3">이전</a>
+            <a th:if="${pageInfo.searchContent == 'null'}" th:href="@{/notice/list}" class="btn btn-warning col-3">공지사항 이동</a>
+            <a th:href="@{/notice/update/{boardNo}(boardNo=${notice.boardNo})}" id="update-btn" class="btn btn-success col-3">수정</a>
+            <button id="delete-btn" th:value="${notice.boardNo}" class="btn btn-danger col-3" onclick="deleteNotice(this)">삭제</button>
+        </div>
+        <div class="col-12" th:if="${session.loginMember == null || session.loginMember.memberRole == 'G'}">
+            <a th:if="${pageInfo.searchContent != 'null'}" th:href="@{/notice/list/(page=${pageInfo.page},searchType=${pageInfo.searchType},searchContent=${pageInfo.searchContent})}" class="btn btn-warning col-3">이전</a>
+            <a th:if="${pageInfo.searchContent == 'null'}" th:href="@{/notice/list}" class="btn btn-warning col-3">공지사항 이동</a>
+        </div>
+    </div>
+</div>
+<footer>
+    <div class="container">
+        <div class="blank_div"></div>
+        <h3>TAKE YOUR SURVEY!</h3>
+        <div class="blank_div"></div>
+    </div>
+</footer>
+<script>
+let boardContent;
+
+$(document).ready(function() {
+    boardContent = $('#boardContent').val();
+    let Viewer = toastui.Editor;
+    let viewer = new Viewer({
+        el: document.querySelector('#content'),
+        height: '600px',
+        initialValue: boardContent
+    });
+});
+
+function deleteNotice(value){
+    let boardNo = $(value).val();
+    alert(boardNo);
+    if (confirm('정말로 이 설문을 삭제하시겠습니까?')){
+        $.ajax({
+            type: "POST",
+            url: '/notice/delete',
+            data: {boardNo : boardNo},
+            success: function (response) {
+                if (response) {
+                    alert('삭제되었습니다.');
+                    window.location.href='/notice/list';
+                } else {
+                    alert('유효한 공지사항 글지 아닙니다.');
+                    window.location.href='/notice/list';
+                }
+            },
+            error: function (error) {
+                alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
+            },
+        });
+    }
+}
+</script>
+</body>
+</html>
