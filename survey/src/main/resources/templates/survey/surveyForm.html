@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lagn="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <link th:href="@{/css/navbar.css}" rel="stylesheet">
+<style>
+form *{
+text-align: center;
+align-items: center;
+padding: 5px;
+}
+form label{
+font-weight: bolder;
+}
+textarea{
+resize: none;
+}
+.survey-label{
+border: 1px solid thistle;
+border-radius: 15px;
+}
+.make-p{
+border-radius: 15px;
+}
+#button-group{
+text-align: center;
+}
+.charCountMessage{
+display: none;
+}
+.big-text {
+font-size: 36px;
+}
+.small-text {
+font-size: 16px;
+}
+/* 스피너 */
+#loadingContainer {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.5);
+z-index: 9999;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+#loadingOverlay {
+background: #fff;
+padding: 20px;
+border-radius: 5px;
+}
+/* 스피너 */
+  </style>
+</head>
+<body>
+<th:block th:replace="fragments/navbar.html::navbarFragment"/>
+<form id="surveyForm" enctype="multipart/form-data" class="container" >
+  <p id="title-p">
+    <span class="big-text">설</span>
+    <span class="small-text">문</span>
+    <span class="small-text">조</span>
+    <span class="big-text">사</span>
+    <span class="small-text">만들기</span>
+  </p>
+
+  <div id="div-wrap" class="form-group row">
+    <label for="memberId" class="col-sm-3 col-form-label survey-label">작성자</label>
+    <div class="col-sm-3">
+      <input type="text" class="form-control-plaintext form-control" name="memberId" id="memberId"
+             th:value="${session.loginMember != null ? session.loginMember.memberNickname : 'GUEST'}" readonly>
+    </div>
+
+    <label for="surveyDate" class="col-sm-3 col-form-label survey-label">작성날짜</label>
+    <div class="col-sm-3">
+      <input type="text" class="form-control-plaintext form-control" name="surveyDate" id="surveyDate" th:value="${#dates.format(currentTime, 'yyyy-MM-dd')}" readonly>
+    </div>
+
+    <label for="surveyContent" class="col-sm-3 col-form-label survey-label">설문 소개*</label>
+    <div class="col-sm-9">
+      <textarea class="form-control" name="surveyTitle" id="surveyContent" rows="1" placeholder="100자 이내로 설문 소개를 작성해주세요." oninput="autoSize(this)"></textarea>
+      <span class="surveyContent charCountMessage"></span>
+    </div>
+
+    <label for="thumbnail" class="col-sm-3 col-form-label survey-label">썸네일</label>
+    <div class="col-sm-9">
+      <input type="file" name="file" id="thumbnail" class="form-control" onchange="filePreview(this)">
+    </div>
+
+    <label for="surveyEndDate" class="col-sm-3 col-form-label survey-label">종료날짜*</label>
+    <div class="col-sm-9">
+      <input type="date" class="form-control" name="surveyEndDate" id="surveyEndDate">
+    </div>
+
+    <label class="col-sm-3 col-form-label survey-label">※주의사항※</label>
+    <div class="col-sm-9">
+      <sup style="text-align: left; color: red;">1. 썸네일 파일과 기타 모든 파일은 jpeg,jpg,png,gif만을 지원하며 하나만 등록 가능합니다.</sup><br>
+      <sup style="text-align: left; color: red;">2. 종료날짜는 작성날짜부터 최대 30일까지 선택 가능합니다.</sup>
+    </div>
+  </div>
+
+  <div id="survey-div" class="form-group row">
+    <div class="row cloneQuestionDiv">
+      <p class="col-sm-12 make-p" style="background-color: tan">나만의 설문지를 작성해보세요!</p>
+      <label class="col-sm-3 col-form-label survey-label">설문 제목*</label>
+      <div class="col-sm-9">
+        <textarea class="form-control questionTextarea" rows="1" placeholder="400자 이내로 설문 내용을 작성해주세요." oninput="autoSize(this)"></textarea>
+        <span class="answerTitle charCountMessage"></span>
+      </div>
+      <label class="col-sm-3 col-form-label survey-label">첨부파일</label>
+      <div class="col-sm-9">
+        <input type="file" class="form-control" onchange="filePreview(this)">
+      </div>
+      <div class="container row answer-div">
+        <div class="container row cloneAnswerDiv">
+          <label class="col-3 col-form-label survey-label">문항 내용*</label>
+          <div class="col-8">
+            <textarea class="form-control" rows="1" placeholder="400자 이내로 문항 내용을 작성해주세요." oninput="autoSize(this)"></textarea>
+            <span class="answerTitle charCountMessage"></span>
+          </div>
+          <div class="col-1">
+            <button class="btn btn-danger" type="button" onclick="deleteAnswer(this)">삭제</button>
+          </div>
+        </div>
+        <div class="container row cloneAnswerDiv">
+          <label class="col-3 col-form-label survey-label">문항 내용*</label>
+          <div class="col-8">
+            <textarea class="form-control" rows="1" placeholder="400자 이내로 문항 내용을 작성해주세요." oninput="autoSize(this)"></textarea>
+            <span class="answerTitle charCountMessage"></span>
+          </div>
+          <div class="col-1">
+            <button class="btn btn-danger" type="button" onclick="deleteAnswer(this)">삭제</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12">
+        <button class="btn btn-danger col-3" type="button" onclick="deleteQuestion(this)">설문지 삭제</button>
+        <button class="btn btn-outline-primary col-3" type="button" onclick="addAnswer(this)">문항 추가하기</button>
+      </div>
+      <hr align="center" style="width: 100%;"/>
+    </div>
+    <div id="clone-div" class="col-sm-12">
+      <button class="btn btn-outline-primary col-3" type="button" onclick="addQuestion()">설문지 추가하기</button>
+    </div>
+  </div>
+</form><!-- form 끝 -->
+
+<div id="button-group" class="container">
+  <div class="col-sm-12">
+    <button type="button" class="btn btn-success col-3" onclick="submit()">완료</button>
+  </div>
+</div>
+
+<div id="loadingContainer" style="display: none">
+  <div id="loadingOverlay">
+    <div id="loadingSpinner" class="spinner-border" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="blank_div"></div>
+    <h3>TAKE YOUR SURVEY!</h3>
+    <div class="blank_div"></div>
+  </div>
+</footer>
+<script>
+function submit() {
+  if (textValidation() && dateValidation()){
+    if (confirm('설사를 등록하시겠습니까?\n한번 등록된 설사는 수정이 불가합니다.')){
+      showLoadingSpinner();
+      dataSettings();
+      sendFormData(formDataCollect());
+    }else {
+      return false;
+    }
+  }
+}
+
+function sendFormData(formData){
+  $.ajax({
+    type: "POST",
+    url: "/survey/save",
+    data: formData,
+    processData: false, // processData: formData 를 사용할 땐 false 로 설정하여 이미 추출한 formData 를 제이쿼리가 멋대로 변환시키지 못하도록 설정해야함
+    contentType: false, // contentType: false 를 설정하여 컨텐츠 유형 설정을 무시하고 "multipart/form-data" 형식으로 전송하기 위해 설정해야함
+    success: function (response) {
+      hideLoadingSpinner();
+      if (response.result) {
+        let no = response.no;
+        if (confirm('설사가 등록 되었습니다.\n바로 확인해 보시겠습니까?')){
+          window.location.href = `/survey/detail/${no}`;
+        }
+      } else {
+        let name = response.name;
+        let message = response.message;
+        alert(message);
+        $(name).focus();
+      }
+    },
+    error: function (xhr, status, error) {
+      hideLoadingSpinner();
+      alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
+    },
+  });
+}
+
+function formDataCollect() {
+  const formData = new FormData($('#surveyForm')[0]);
+  return formData;
+}
+
+function dataSettings(){
+  let questionDivs = $("#survey-div .cloneQuestionDiv");
+
+  questionDivs.each(function(index) {
+    let inputFile = $(this).find("input[type='file']");
+    let questionTextarea = $(this).find(".questionTextarea");
+
+    inputFile.attr("name", "questionList[" + (index) + "].file");
+    questionTextarea.attr("name", "questionList[" + (index) + "].questionTitle");
+
+    let answerDiv = $(this).find(".answer-div");
+    let answerCount = answerDiv.find(".cloneAnswerDiv").length;
+    let textAreas = $(this).find("textarea:not(.questionTextarea)");
+
+    textAreas.each(function(textIndex) {
+      $(this).attr("name", "questionList[" + (index) + "].answer" + (textIndex+1));
+    });
+  });
+}
+
+function textValidation() {
+  let maxLength;
+  let message;
+  let valid = true;
+
+  let surveyTexts = $('form').find('textarea');
+  surveyTexts.each(function (index) {
+    let textValue = $(this).val();
+    if ($(this).attr('id') === 'surveyContent') {
+      maxLength = 100;
+    } else {
+      maxLength = 400;
+    }
+    if (!textValue) {
+      message = "아직 작성하지 않은 항목이 있습니다.";
+      alert(message);
+      $(this).focus();
+      valid = false;
+      return false;
+    } else if (textValue.length > maxLength) {
+      message = maxLength + "자를 초과해서 입력할 수 없습니다.";
+      alert(message);
+      $(this).focus();
+      valid = false;
+      return false;
+    }
+  });
+  return valid;
+}
+
+let count = 1;
+function addQuestion(){
+  if($(".cloneQuestionDiv").length < 5){
+    const cloneQuestionDiv = `<div class="row cloneQuestionDiv">
+                                  <p class="col-sm-12 make-p" style="background-color: tan">나만의 설문지를 작성해보세요!</p>
+                                  <label class="col-sm-3 col-form-label survey-label">설문 제목*</label>
+                                  <div class="col-sm-9">
+                                      <textarea class="form-control questionTextarea" rows="1" placeholder="400자 이내로 설문 내용을 작성해주세요." oninput="autoSize(this)"></textarea>
+                                      <span class="answerTitle charCountMessage"></span>
+                                  </div>
+                                  <label class="col-sm-3 col-form-label survey-label">첨부파일</label>
+                                  <div class="col-sm-9">
+                                      <input type="file" class="form-control" onchange="filePreview(this)">
+                                  </div>
+                                  <div class="container row answer-div">
+                                      <div class="container row cloneAnswerDiv">
+                                          <label class="col-3 col-form-label survey-label">문항 내용*</label>
+                                          <div class="col-8">
+                                              <textarea class="form-control" rows="1" placeholder="400자 이내로 문항 내용을 작성해주세요." oninput="autoSize(this)"></textarea>
+                                              <span class="answerTitle charCountMessage"></span>
+                                          </div>
+                                          <div class="col-1">
+                                              <button class="btn btn-danger" type="button" onclick="deleteAnswer(this)">삭제</button>
+                                          </div>
+                                      </div>
+                                      <div class="container row cloneAnswerDiv">
+                                          <label class="col-3 col-form-label survey-label">문항 내용*</label>
+                                          <div class="col-8">
+                                              <textarea class="form-control" rows="1" placeholder="400자 이내로 문항 내용을 작성해주세요." oninput="autoSize(this)"></textarea>
+                                              <span class="answerTitle charCountMessage"></span>
+                                          </div>
+                                          <div class="col-1">
+                                              <button class="btn btn-danger" type="button" onclick="deleteAnswer(this)">삭제</button>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div class="col-sm-12">
+                                      <button class="btn btn-danger col-3" type="button" onclick="deleteQuestion(this)">설문지 삭제</button>
+                                      <button class="btn btn-outline-primary col-3" type="button" onclick="addAnswer(this)">문항 추가하기</button>
+                                  </div>
+                                  <hr align="center" style="width: 100%;"/>
+                              </div>`;
+    $('#clone-div').before(cloneQuestionDiv);
+  }else{
+    alert('설문지는 최대 5개까지 등록 가능합니다!^^');
+  }
+}
+
+function addAnswer(button) {
+  let parentDiv = $(button).closest(".cloneQuestionDiv");
+  let index = $("#survey-div").children(".cloneQuestionDiv").index(parentDiv);
+
+  let answerDiv = parentDiv.find(".answer-div");
+  let cloneAnswerDivs = answerDiv.find(".cloneAnswerDiv");
+  let answerCount = cloneAnswerDivs.length;
+
+  if (answerCount < 5) {
+    const cloneAnswerDiv = `<div class="container row cloneAnswerDiv">
+                                  <label class="col-3 col-form-label survey-label">문항 내용*</label>
+                                  <div class="col-8">
+                                      <textarea class="form-control" rows="1" placeholder="400자 이내로 문항 내용을 작성해주세요." oninput="autoSize(this)"></textarea>
+                                      <span class="answerTitle charCountMessage"></span>
+                                  </div>
+                                  <div class="col-1">
+                                      <button class="btn btn-danger" type="button" onclick="deleteAnswer(this)">삭제</button>
+                                  </div>
+                              </div>`;
+    answerDiv.append(cloneAnswerDiv);
+  }else{
+    alert('문항은 최대 5개까지 등록 가능합니다!^^');
+  }
+}
+
+function deleteAnswer(button) {
+  let parentDiv = $(button).closest(".cloneAnswerDiv");
+  let answerDiv = parentDiv.closest(".answer-div");
+  let cloneAnswerDivs = answerDiv.find(".cloneAnswerDiv");
+  let cloneAnswerCount = cloneAnswerDivs.length;
+
+  if(cloneAnswerCount > 2){
+    parentDiv.remove();
+  }else{
+    alert('최소 2개의 문항은 필수입니다.');
+  }
+}
+
+function deleteQuestion(button) {
+  let parentDiv = $(button).closest(".cloneQuestionDiv");
+  let cloneQuestionDivs = $("#survey-div").find(".cloneQuestionDiv");
+  let index = $("#survey-div").children(".cloneQuestionDiv").index(parentDiv);
+  let cloneQuestionCount = cloneQuestionDivs.length;
+
+  if(cloneQuestionCount > 1){
+    parentDiv.remove();
+  }else {
+    alert('최소 1개의 설문지는 필수입니다.');
+  }
+}
+
+function autoSize(value) {
+  value.style.height = 'auto';
+  value.style.height = (value.scrollHeight) + 'px';
+  checkCharacterCount(value);
+}
+
+function checkCharacterCount(textarea) {
+  let maxLength;
+  const currentText = $(textarea).val();
+  const charCountMessage = $(textarea).siblings('span.charCountMessage');
+  console.log('charCountMessage : '+charCountMessage);
+
+  if ($(textarea).siblings().hasClass('surveyContent')){
+    maxLength = 100;
+  }else if ($(textarea).siblings().hasClass('answerTitle')){
+    maxLength = 400;
+  }else{
+    return;
+  }
+
+  if (currentText.length === 0) {
+    charCountMessage.hide();
+  } else if (currentText.length >= maxLength) {
+    const truncatedText = currentText.slice(0, maxLength);
+    $(textarea).val(truncatedText);
+    charCountMessage.text(maxLength + '자를 초과하여 입력할 수 없습니다.');
+    charCountMessage.css('color', 'red');
+    charCountMessage.show();
+  } else {
+    charCountMessage.text(currentText.length + ' / ' + maxLength + ' 글자');
+    charCountMessage.css('color', 'black');
+    charCountMessage.show();
+  }
+}
+
+// 파일 미리보기
+let previewCount = 1;
+function filePreview(value) {
+  let file = value;
+
+  if (file.files.length > 0) {
+    const fileType = file.files[0].type;
+    // 지원하는 파일 형식
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+
+    // 지원하는 파일 형식과 사용자의 첨부파일 확장자 비교
+    if (allowedTypes.includes(fileType)) {
+
+      // 이미 존재하는 미리보기 img 태그 삭제
+      const $value = $(value);
+      if ($value.next('img').length > 0) {
+        $value.next('img').remove();
+      }
+      const reader = new FileReader();
+      const previewId = `preview` + previewCount;
+      const preview = `<img id="` + previewId + `" src="#" style=" width: 500px; height: 250px;">`;
+      $value.after(preview);
+
+      reader.onload = function (e) {
+        $('#' + previewId).attr("src", e.target.result);
+        $('#' + previewId).show();
+      };
+      reader.readAsDataURL(file.files[0]);
+      previewCount++;
+    } else {
+      alert("JPG, JPEG, PNG, GIF 파일만 지원합니다. 다시 선택해주세요.");
+      // 파일 선택 취소 및 미리보기 img 태그 삭제
+      $(value).val("").next('img').remove();
+    }
+  } else {
+    // 파일 선택을 취소한 경우 미리보기 img 태그 삭제
+    $(value).next('img').remove();
+  }
+}
+
+const today = new Date();
+const endDate = $("#surveyEndDate");
+endDate.attr("min", today.toISOString().split("T")[0]);
+
+const max = new Date();
+max.setDate(today.getDate() + 29);
+const maxDate = max.toISOString().split("T")[0];
+
+endDate.on("change", function() {
+  if (endDate.val() > maxDate) {
+    alert('종료날짜는 작성날짜부터 최대 30일까지 선택 가능합니다.\n' + maxDate + ' 까지 선택 가능합니다.');
+    endDate.val("");
+  }
+});
+
+function dateValidation(){
+  let surveyEndDate = $("#surveyEndDate");
+  let status = true;
+
+  if (!surveyEndDate.val()) {
+    alert("종료날짜를 입력하세요.");
+    surveyEndDate.focus();
+    status = false;
+    return status;
+  }
+  if (enddate.val() > maxDate) {
+    alert('종료날짜는 작성날짜부터 최대 30일까지 선택 가능합니다.\n' + maxDate +  ' 까지 선택 가능합니다.')
+    surveyEndDate.focus();
+    enddate.val("");
+    status = false;
+    return status;
+  }
+  return status;
+}
+
+function showLoadingSpinner() {
+  $('#loadingContainer').show();
+  $('body').addClass('no-scroll');
+}
+
+function hideLoadingSpinner() {
+  $('#loadingContainer').hide();
+  $('body').removeClass('no-scroll');
+}
+</script>
+</body>
+</html>
