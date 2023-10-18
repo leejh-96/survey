@@ -1,0 +1,56 @@
+<html lagn="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="navbarFragment">
+<div class="blank_div"></div>
+
+<nav id="navar" class="nav_wrap container">
+    <ul id="navi">
+        <li><a th:href="@{/}">HOME</a></li>
+        <li>
+            <a href="#">
+                <span class="big-text">설</span>
+                <span class="small-text">문</span>
+                <span class="small-text">조</span>
+                <span class="big-text">사</span>
+            </a>
+            <ul>
+                <li>
+                    <a th:href="@{/survey/list}">
+                        <span class="small-text">설사 참여하기</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/survey/form}">
+                        <span class="small-text">설사 만들기</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a th:href="@{/notice/list}">공지사항</a>
+        </li>
+        <li th:if="${session.loginMember == null}">
+            <button type="button" class="btn btn-outline-primary" th:onclick="|location.href='@{/join/form}'|">Join</button>
+            <button type="button" class="btn btn-outline-primary" th:onclick="|location.href='@{/loginForm}'|">Login</button>
+        </li>
+        <li th:if="${session.loginMember != null}">
+            <a href="#">My Page</a>
+            <ul>
+                <li>
+                    <a th:if="${session.loginMember.memberRole == 'A'}" th:href="@{/logout}">Admin Logout</a>
+                </li>
+                <li>
+                    <a th:if="${session.loginMember.memberRole == 'G'}" th:href="@{/logout}">Logout</a>
+                </li>
+                <li>
+                    <a th:if="${session.loginMember.memberRole == 'G'}" th:href="@{/mypage/pwform}">비밀번호 변경</a>
+                </li>
+                <li>
+                    <a th:if="${session.loginMember.memberRole == 'G'}" th:href="@{/mypage/leaveform}">설사 탈퇴</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+<div class="blank_div"></div>
+</th:block>
+</html>
