@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <link th:href="@{/css/navbar.css}" rel="stylesheet">
+<style>
+#survey-list{
+position: sticky;
+top: 40px;
+z-index: 99;
+}
+.survey-card{
+width: 500px;
+height: 250px;
+}
+.time-span{
+text-align: left;
+}
+.question-span{
+color: white;
+}
+#button-group{
+text-align: center;
+margin-top: 25px;
+margin-bottom: 25px;
+}
+.margin-div{
+height: 150px;
+}
+#surveyForm input{
+text-align: center;
+}
+.count-p{
+color: #146c42;
+font-weight: bold;
+font-size: medium;
+}
+.answer-span{
+font-weight: bold;
+font-size: medium;
+}
+.title{
+font-weight: bold;
+font-size: large;
+}
+.breadcrumb-item{
+font-weight: bolder;
+font-size: large;
+}
+.breadcrumb-item a{
+text-decoration: none;
+}
+</style>
+</head>
+<body>
+<th:block th:replace="fragments/navbar.html::navbarFragment"/>
+<div id="survey-wrap" class="container survey-wrap">
+    <div class="container">
+        <div id="survey-list" class="row">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li th:each="i : ${#numbers.sequence(0, survey.surveyCount)}" class="breadcrumb-item">
+                        <a th:if="${i == 0}" th:href="'#list-item-'+${i}">설문지 소개</a>
+                        <a th:if="${i != 0}" th:href="'#list-item-'+${i}" th:text="${i} + '번 설문지'"></a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="#" style="color: red">신고하기</a></li>
+                </ol>
+            </nav>
+        </div>
+        <div data-spy="scroll">
+            <div id="list-item-0" class="margin-div"></div>
+            <div class="card text-center">
+                <div class="card-header">
+                    <p th:text="${survey.resultCount} + '명이 이 설문지에 참여했습니다.'"></p>
+                    <div class="row">
+                        <div class="col-12">
+                            <h3><span class="badge bg-secondary question-span">설문지 소개</span></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <span th:text="${survey.time}" class="badge badge-pill badge-primary time-span"></span>
+                        <span th:text="'작성자 : '+${survey.memberNickname}" th:class="${survey.memberNickname == '설사킹isADMIN'} ? 'badge badge-success' : 'badge badge-info'"></span>
+                        <span th:text="'참여기간 : '+${survey.surveyDate}+'~'+${survey.surveyEndDate}" class="badge badge-warning "></span>
+                        <span th:text="'조회수 : '+${survey.surveyHit}" class="badge badge-pill badge-primary "></span>
+                    </p>
+                    <img th:if="${survey.thumbnailPath != null}" th:src="${survey.thumbnailPath}" class="img-fluid img-thumbnail survey-card">
+                    <img th:if="${survey.thumbnailPath == null}" th:src="@{/img/welcome-8386_128.gif}" class="img-fluid img-thumbnail survey-card"><br>
+                    <span th:if="${survey.thumbnailPath == null}" class="badge badge-danger">등록된 썸네일이 없습니다.</span>
+                </div>
+                <div class="card-footer text-muted">
+                    <div class="row">
+                        <div class="col-12">
+                            <p th:text="${survey.surveyTitle}" class="card-text title"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="div-wrap">
+                <th:block th:each="question : ${survey.questionList}">
+                    <div th:id="'list-item-' + ${question.questionSeq}" class="margin-div"></div>
+                    <div class="card text-center clone-question">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3><span th:text="${question.questionSeq} + '번 설문지'" class="badge bg-secondary question-span"></span></h3>
+                                </div>
+                                <div class="col-12">
+                                    <p th:text="${question.questionTitle}" class="title"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${question.questionPath != null}" class="card-body">
+                            <img th:src="${question.questionPath}" class="img-fluid img-thumbnail survey-card">
+                        </div>
+                        <div th:if="${question.questionPath == null}" class="card-body">
+                            <img th:src="@{/img/welcome-8386_128.gif}" class="img-fluid img-thumbnail survey-card"><br>
+                            <span class="badge badge-danger">등록된 이미지가 없습니다.</span>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${question.answer1 != null}">
+                                <label class="col-12">
+                                    <input disabled type="radio">
+                                    <span th:text="${question.answer1}" class="answer-span"></span>
+                                    <p th:text="${question.answer1Count} + '명이 이 문항을 선택했습니다.'" class="count-p"></p>
+                                </label>
+                            </div>
+                            <div th:if="${question.answer2 != null}">
+                                <label class="col-12">
+                                    <input disabled type="radio">
+                                    <span th:text="${question.answer2}" class="answer-span"></span>
+                                    <p th:text="${question.answer2Count} + '명이 이 문항을 선택했습니다.'" class="count-p"></p>
+                                </label>
+                            </div>
+                            <div th:if="${question.answer3 != null}">
+                                <label class="col-12">
+                                    <input disabled type="radio">
+                                    <span th:text="${question.answer3}" class="answer-span"></span>
+                                    <p th:text="${question.answer3Count} + '명이 이 문항을 선택했습니다.'" class="count-p"></p>
+                                </label>
+                            </div>
+                            <div th:if="${question.answer4 != null}">
+                                <label class="col-12">
+                                    <input disabled type="radio">
+                                    <span th:text="${question.answer4}" class="answer-span"></span>
+                                    <p th:text="${question.answer4Count} + '명이 이 문항을 선택했습니다.'" class="count-p"></p>
+                                </label>
+                            </div>
+                            <div th:if="${question.answer5 != null}">
+                                <label class="col-12">
+                                    <input disabled type="radio">
+                                    <span th:text="${question.answer5}" class="answer-span"></span>
+                                    <p th:text="${question.answer5Count} + '명이 이 문항을 선택했습니다.'" class="count-p"></p>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+            </div>
+        </div>
+        <div id="button-group" class="container">
+            <div class="col-12">
+                <th:block th:if="${session.loginMember == null}">
+                    <a th:if="${pageInfo.searchContent != 'null'}" th:href="@{/survey/list/(page=${pageInfo.page},searchType=${pageInfo.searchType},searchContent=${pageInfo.searchContent})}" class="btn btn-warning col-4">이전</a>
+                    <a th:if="${pageInfo.searchContent == 'null'}" th:href="@{/survey/list/}" class="btn btn-warning col-4">설문 리스트 이동</a>
+                </th:block>
+                <th:block th:if="${session.loginMember != null && session.loginMember.memberRole == 'A'}">
+                    <a th:if="${pageInfo.searchContent != 'null'}" th:href="@{/survey/list/(page=${pageInfo.page},searchType=${pageInfo.searchType},searchContent=${pageInfo.searchContent})}" class="btn btn-warning col-3">이전</a>
+                    <a th:if="${pageInfo.searchContent == 'null'}" th:href="@{/survey/list/}" class="btn btn-warning col-3">설문 리스트 이동</a>
+                    <button class="btn btn-danger col-3" type="button" th:value="${survey.surveyNo}" onclick="deleteSurvey(this)">삭제</button>
+                </th:block>
+                <th:block th:if="${session.loginMember != null && session.loginMember.memberRole == 'G'}">
+                    <a th:if="${pageInfo.searchContent != 'null'}" th:href="@{/survey/list/(page=${pageInfo.page},searchType=${pageInfo.searchType},searchContent=${pageInfo.searchContent})}" class="btn btn-warning col-3">이전</a>
+                    <a th:if="${pageInfo.searchContent == 'null'}" th:href="@{/survey/list/}" class="btn btn-warning col-3">설문 리스트 이동</a>
+                    <button th:if="${session.loginMember.memberNo == survey.memberNo}" class="btn btn-danger col-3" type="button" th:value="${survey.surveyNo}" onclick="deleteSurvey(this)">삭제</button>
+                </th:block>
+            </div>
+        </div>
+    </div>
+</div>
+<footer>
+    <div class="container">
+        <div class="blank_div"></div>
+        <h3>TAKE YOUR SURVEY!</h3>
+        <div class="blank_div"></div>
+    </div>
+</footer>
+<script>
+function deleteSurvey(value){
+    let surveyNo = $(value).val();
+    alert(surveyNo);
+    if (confirm('정말로 이 설사를 삭제하시겠습니까?')){
+        $.ajax({
+            type: "POST",
+            url: '/survey/delete',
+            data: {surveyNo : surveyNo},
+            success: function (response) {
+                if (response) {
+                    alert('삭제되었습니다.');
+                    window.location.href='/survey/list';
+                } else {
+                    alert('유효한 설문지가 아닙니다.');
+                    window.location.href='/survey/list';
+                }
+            },
+            error: function (error) {
+                alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
+            },
+        });
+    }
+}
+</script>
+</body>
+</html>
