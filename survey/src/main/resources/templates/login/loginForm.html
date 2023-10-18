@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lagn="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: "Noto Sans KR", sans-serif;
+}
+
+a {
+text-decoration: none;
+color: black;
+}
+
+li {
+list-style: none;
+}
+
+.wrap {
+width: 100%;
+height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+background: rgba(0, 0, 0, 0.1);
+}
+
+.login {
+width: 30%;
+height: 600px;
+background: white;
+border-radius: 20px;
+display: flex;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+}
+
+h2 {
+color: tomato;
+font-size: 2em;
+}
+.login_sns {
+padding: 20px;
+display: flex;
+}
+
+.login_sns li {
+padding: 0px 15px;
+}
+
+.login_sns a {
+width: 50px;
+height: 50px;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 10px;
+border-radius: 50px;
+background: white;
+font-size: 20px;
+box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.4), -3px -3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.login_id {
+margin-top: 20px;
+width: 80%;
+}
+
+.login_id input {
+width: 100%;
+height: 50px;
+border-radius: 30px;
+margin-top: 10px;
+padding: 0px 20px;
+border: 1px solid lightgray;
+outline: none;
+}
+
+.login_pw {
+margin-top: 20px;
+width: 80%;
+}
+
+.login_pw input {
+width: 100%;
+height: 50px;
+border-radius: 30px;
+margin-top: 10px;
+padding: 0px 20px;
+border: 1px solid lightgray;
+outline: none;
+}
+
+.login_etc {
+padding: 10px;
+width: 80%;
+font-size: 14px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-weight: bold;
+}
+
+.submit {
+margin-top: 25px;
+width: 80%;
+}
+.submit input{
+width: 100%;
+height: 50px;
+border: 0;
+outline: none;
+border-radius: 40px;
+background: linear-gradient(to left, rgb(255, 77, 46), rgb(255, 155, 47));
+color: white;
+font-size: 1.2em;
+letter-spacing: 2px;
+}
+.field-error{
+border-color: #dc3545;
+color: #dc3545;
+}
+</style>
+</head>
+<body>
+    <form th:action="@{/login}" th:method="post" th:object="${loginMemberDTO}" class="form-inline">
+        <div class="wrap">
+            <div class="login">
+                <h2>Log-in</h2>
+                <div th:if="${#fields.hasGlobalErrors()}">
+                    <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+                </div>
+                <div class="login_id">
+                    <h4>ID</h4>
+                    <input th:field="*{memberId}" th:errorclass="field-error" type="text" id="memberId" name="memberId" placeholder="ID">
+                    <p th:errors="*{memberId}" class="field-error"></p>
+                </div>
+                <div class="login_pw">
+                    <h4>Password</h4>
+                    <input th:field="*{memberPassword}" th:errorclass="field-error" type="password" id="memberPassword" name="memberPassword" placeholder="Password">
+                    <p th:errors="*{memberPassword}" class="field-error"></p>
+                </div>
+                <div class="login_etc">
+                    <div class="forgot_pw">
+                        <a th:href="@{/findId}">아이디찾기</a>
+                        <a th:href="@{/findPassword}">비밀번호찾기</a>
+                    </div>
+                </div>
+                <div class="submit">
+                    <input type="submit" value="로그인">
+                </div>
+                <div class="submit">
+                    <input type="button" value="회원가입" onclick="getJoinForm()">
+                </div>
+                <div class="submit">
+                    <input type="button" value="HOME" onclick="getHome()">
+                </div>
+            </div>
+        </div>
+    </form>
+<script>
+function getJoinForm(){
+    window.location.href='/join/form';
+}
+function getHome(){
+    window.location.href='/';
+}
+</script>
+</body>
+</html>
