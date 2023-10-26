@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tys.survey.repository.MyPageRepository">
+
+    <update id="updatePassword" parameterType="JoinFormDTO">
+        UPDATE `MEMBER`
+        SET MEMBER_PASSWORD = #{memberPassword}
+        WHERE MEMBER_NO = #{memberNo}
+    </update>
+
+    <delete id="deleteMember" parameterType="LoginMemberDTO">
+        DELETE FROM `MEMBER`
+        WHERE MEMBER_NO = #{memberNo}
+    </delete>
+
+    <select id="getMemberPassword" resultType="string" parameterType="int">
+        SELECT MEMBER_PASSWORD
+        FROM MEMBER
+        WHERE MEMBER_NO = #{memberNo}
+    </select>
+
+    <select id="getFileList" parameterType="int" resultType="string">
+        SELECT THUMBNAIL_RENAME
+        FROM SURVEY_INFO
+        WHERE MEMBER_NO = #{memberNo}
+
+        UNION
+
+        SELECT q.QUESTION_RENAME
+        FROM SURVEY_INFO si
+        INNER JOIN QUESTION q ON si.SURVEY_NO = q.SURVEY_NO
+        WHERE MEMBER_NO = #{memberNo}
+    </select>
+
+</mapper>
