@@ -27,10 +27,10 @@
 
 ## 메뉴 구조도 및 IA
 * 사용자
-![_  TYS(user)](https://github.com/leejh-96/survey/assets/115613811/2d8b49af-639d-4368-ba60-aa8f77cd2d70)
+![_  TYS(user) (1)](https://github.com/leejh-96/survey/assets/115613811/834e0497-9f38-4ef9-9b63-8cb918af8ea5)
 
 * 관리자
-![TYS(admin)](https://github.com/leejh-96/survey/assets/115613811/51e83cf7-73c4-41c2-a825-6a292eb1288b)
+![TYS(admin) (1)](https://github.com/leejh-96/survey/assets/115613811/f28f1b9c-c4a7-4db5-bf82-003843202cc6)
 
 ## 화면정의서
 
