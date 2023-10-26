@@ -25,6 +25,13 @@
 ### 기타
 * `Postman`
 
+## 메뉴 구조도 및 IA
+* 사용자
+![_  TYS(user)](https://github.com/leejh-96/survey/assets/115613811/2d8b49af-639d-4368-ba60-aa8f77cd2d70)
+
+* 관리자
+![TYS(admin)](https://github.com/leejh-96/survey/assets/115613811/51e83cf7-73c4-41c2-a825-6a292eb1288b)
+
 ## 화면정의서
 
 ## ERDiagram
