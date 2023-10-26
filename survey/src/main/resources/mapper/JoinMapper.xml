@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tys.survey.repository.JoinRepository">
+
+    <insert id="save" parameterType="JoinFormDTO">
+        INSERT INTO `MEMBER`
+        (MEMBER_NICKNAME, MEMBER_ID, MEMBER_PASSWORD, MEMBER_DATE, MEMBER_ROLE)
+        VALUES
+        (#{memberNickname}, #{memberEmail}, #{memberPassword}, #{memberDate}, 'G')
+    </insert>
+
+    <update id="updatePassword" parameterType="JoinFormDTO">
+        UPDATE `MEMBER`
+        SET MEMBER_PASSWORD = #{memberPassword}
+        WHERE MEMBER_ID = #{memberEmail}
+    </update>
+
+    <select id="duplicateEmail" resultType="int" parameterType="string">
+        SELECT COUNT(*)
+        FROM `MEMBER`
+        WHERE MEMBER_ID = #{memberEmail}
+    </select>
+
+    <select id="duplicateNickName" parameterType="string" resultType="int">
+        SELECT COUNT(*) AS COUNT
+        FROM `MEMBER`
+        WHERE MEMBER_NICKNAME = #{nickName}
+    </select>
+
+</mapper>
