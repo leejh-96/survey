@@ -39,24 +39,24 @@ public class EmailConfig {
     @Bean
     public JavaMailSender javaMailSender(){
         JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
-        javaMailSender.setHost(this.host);
-        javaMailSender.setPort(this.port);
-        javaMailSender.setUsername(this.userName);
-        javaMailSender.setPassword(this.password);
-        javaMailSender.setProtocol(this.protocol);
-        javaMailSender.setDefaultEncoding(this.encoding);
-        javaMailSender.setJavaMailProperties(this.getMailProperties());
+        javaMailSender.setHost(host);
+        javaMailSender.setPort(port);
+        javaMailSender.setUsername(userName);
+        javaMailSender.setPassword(password);
+        javaMailSender.setProtocol(protocol);
+        javaMailSender.setDefaultEncoding(encoding);
+        javaMailSender.setJavaMailProperties(getMailProperties());
         return javaMailSender;
     }
 
     @Bean
     public Properties getMailProperties(){
         Properties prop = new Properties();
-        prop.put("mail.debug",this.debug);
-        prop.put("mail.smtp.timeout",this.timeOut);
-        prop.put("mail.smtp.starttls.enable",this.starttlsEnable);
-        prop.put("mail.smtp.starttls.required",this.starttlsRequired);
-        prop.put("mail.smtp.auth",this.auth);
+        prop.put("mail.debug",debug);
+        prop.put("mail.smtp.timeout",timeOut);
+        prop.put("mail.smtp.starttls.enable",starttlsEnable);
+        prop.put("mail.smtp.starttls.required",starttlsRequired);
+        prop.put("mail.smtp.auth",auth);
         return prop;
     }
 
