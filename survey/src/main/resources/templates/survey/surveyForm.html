@@ -61,7 +61,7 @@ border-radius: 5px;
 </head>
 <body>
 <th:block th:replace="fragments/navbar.html::navbarFragment"/>
-<form id="surveyForm" enctype="multipart/form-data" class="container" >
+<form id="surveyForm" enctype="multipart/form-data" class="container">
   <p id="title-p">
     <span class="big-text">설</span>
     <span class="small-text">문</span>
@@ -100,8 +100,10 @@ border-radius: 5px;
 
     <label class="col-sm-3 col-form-label survey-label">※주의사항※</label>
     <div class="col-sm-9">
-      <sup style="text-align: left; color: red;">1. 썸네일 파일과 기타 모든 파일은 jpeg,jpg,png,gif만을 지원하며 하나만 등록 가능합니다.</sup><br>
-      <sup style="text-align: left; color: red;">2. 종료날짜는 작성날짜부터 최대 30일까지 선택 가능합니다.</sup>
+      <sup style="text-align: left; color: red;">1. 썸네일 파일과 기타 모든 파일은 jpeg,jpg,png,gif만을 지원하며 하나씩 등록 가능합니다.</sup><br>
+      <sup style="text-align: left; color: red;">2. 종료날짜는 작성날짜부터 최대 30일까지 선택 가능합니다.</sup><br>
+      <sup style="text-align: left; color: red;">3. 설문 등록 시 결과 조작 등의 이유로 수정은 불가하며, 삭제만 가능합니다.</sup><br>
+      <sup style="text-align: left; color: red;">4. 썸네일과 파일 미등록시 welcome 이미지가 적용됩니다.</sup>
     </div>
   </div>
 
@@ -175,10 +177,11 @@ border-radius: 5px;
 <script>
 function submit() {
   if (textValidation() && dateValidation()){
-    if (confirm('설사를 등록하시겠습니까?\n한번 등록된 설사는 수정이 불가합니다.')){
+    if (confirm('※주의사항※\n- 설문 등록 시 결과 조작 등의 이유로 수정은 불가하며, 삭제만 가능합니다.\n- 썸네일과 파일 미등록시 welcome 이미지가 적용됩니다.\n설사를 등록하시겠습니까?')){
       showLoadingSpinner();
       dataSettings();
       sendFormData(formDataCollect());
+      return true;
     }else {
       return false;
     }
@@ -190,25 +193,29 @@ function sendFormData(formData){
     type: "POST",
     url: "/survey/save",
     data: formData,
-    processData: false, // processData: formData 를 사용할 땐 false 로 설정하여 이미 추출한 formData 를 제이쿼리가 멋대로 변환시키지 못하도록 설정해야함
-    contentType: false, // contentType: false 를 설정하여 컨텐츠 유형 설정을 무시하고 "multipart/form-data" 형식으로 전송하기 위해 설정해야함
-    success: function (response) {
+    processData: false, // processData: new FormData()객체를 사용할 땐 false 로 설정하여 이미 추출한 formData 를 제이쿼리가 멋대로 변환시키지 못하도록 설정해야함
+    contentType: false, // contentType: 마찬가지로 false 를 설정하여 컨텐츠 유형 설정을 무시하고 "multipart/form-data" 형식으로 전송하기 위해 설정해야함
+    success: function (data, status, xhr) {
       hideLoadingSpinner();
-      if (response.result) {
-        let no = response.no;
-        if (confirm('설사가 등록 되었습니다.\n바로 확인해 보시겠습니까?')){
-          window.location.href = `/survey/detail/${no}`;
-        }
-      } else {
-        let name = response.name;
-        let message = response.message;
-        alert(message);
-        $(name).focus();
+      if (xhr.status === 200){
+          if (confirm('설사가 등록 되었습니다.\n바로 확인해 보시겠습니까?')){
+            window.location.href = `/survey/detail/${data.param}`;
+          }else{
+            alert('설사 리스트로 이동합니다.');
+            window.location.href = `/survey/list`;
+          }
       }
     },
     error: function (xhr, status, error) {
+      let data = xhr.responseJSON;
       hideLoadingSpinner();
-      alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
+      if (xhr.status === 401){
+        alert(data.message);
+      }else if (xhr.status === 400){
+        alert(data.message);
+      }else {
+        alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
+      }
     },
   });
 }
@@ -377,7 +384,6 @@ function checkCharacterCount(textarea) {
   let maxLength;
   const currentText = $(textarea).val();
   const charCountMessage = $(textarea).siblings('span.charCountMessage');
-  console.log('charCountMessage : '+charCountMessage);
 
   if ($(textarea).siblings().hasClass('surveyContent')){
     maxLength = 100;
@@ -467,10 +473,10 @@ function dateValidation(){
     status = false;
     return status;
   }
-  if (enddate.val() > maxDate) {
+  if (endDate.val() > maxDate) {
     alert('종료날짜는 작성날짜부터 최대 30일까지 선택 가능합니다.\n' + maxDate +  ' 까지 선택 가능합니다.')
     surveyEndDate.focus();
-    enddate.val("");
+    endDate.val("");
     status = false;
     return status;
   }

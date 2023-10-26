@@ -107,7 +107,6 @@ $(document).ready(function() {
             body : formData,
           });
           const filePath = await response.text();
-          console.log('filePath : '+filePath);
           callback(filePath);
         }else {
           alert("JPG, JPEG, PNG, GIF 파일만 지원합니다. 다시 선택해주세요.");
@@ -127,7 +126,6 @@ function submitCheck(){
     alert('제목을 작성해주세요.');
     return false;
   }
-  alert(editor.getMarkdown());
   if (editor.getMarkdown().length < 1){
     alert('내용을 작성해주세요.');
     return false;

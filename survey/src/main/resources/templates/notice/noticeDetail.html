@@ -91,7 +91,6 @@ $(document).ready(function() {
 
 function deleteNotice(value){
     let boardNo = $(value).val();
-    alert(boardNo);
     if (confirm('정말로 이 설문을 삭제하시겠습니까?')){
         $.ajax({
             type: "POST",
@@ -102,7 +101,7 @@ function deleteNotice(value){
                     alert('삭제되었습니다.');
                     window.location.href='/notice/list';
                 } else {
-                    alert('유효한 공지사항 글지 아닙니다.');
+                    alert('유효한 공지사항 글이 아닙니다.');
                     window.location.href='/notice/list';
                 }
             },

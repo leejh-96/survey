@@ -182,22 +182,20 @@ text-decoration: none;
 <script>
 function deleteSurvey(value){
     let surveyNo = $(value).val();
-    alert(surveyNo);
     if (confirm('정말로 이 설사를 삭제하시겠습니까?')){
         $.ajax({
             type: "POST",
             url: '/survey/delete',
             data: {surveyNo : surveyNo},
-            success: function (response) {
-                if (response) {
+            success: function (data, status, xhr) {
+                if (data){
                     alert('삭제되었습니다.');
                     window.location.href='/survey/list';
-                } else {
-                    alert('유효한 설문지가 아닙니다.');
-                    window.location.href='/survey/list';
+                }else{
+                    alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
                 }
             },
-            error: function (error) {
+            error: function (xhr, status, error) {
                 alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
             },
         });
@@ -217,22 +215,26 @@ function sendFormData(formData){
         data: formData,
         processData: false, //formData 를 아무간섭, 변경없이 보내기 위해 설정함
         contentType: false,
-        success: function (response) {
-            if (response.result) {
-                redirect(response);
-            } else {
-                let message = response.message;
-                alert(message);
+        success: function (data, status, xhr) {
+            if (xhr.status === 200){
+                redirect(data.param);
+                alert('정상적으로 결과가 반영되었습니다.');
             }
         },
-        error: function (error) {
-            alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
+        error: function (xhr, status, error) {
+            let data = xhr.responseJSON;
+            if (xhr.status === 401){
+                alert(data.message);
+            }else if (xhr.status === 409){
+                alert(data.message);
+            }else{
+                alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
+            }
         },
     });
 }
 
-function redirect(response){
-    let param = response.param;
+function redirect(param){
     let pageInfo = $('#button').val().split(',');
     let page = pageInfo[0];
     let searchType = parseInt(pageInfo[1]);

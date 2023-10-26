@@ -160,7 +160,7 @@ function findById(){
             if (!response.result){
                 $('#result-message').text('닉네임과 일치하는 아이디가 없습니다.').css('color', 'red');
             }else{
-                $('#result-message').text('회원님의 아이디는 ' + response.memberId + ' 입니다.').css('color', 'blue');
+                $('#result-message').text('회원님의 아이디는 ' + response.param + ' 입니다.').css('color', 'blue');
             }
         },
         error: function (error){

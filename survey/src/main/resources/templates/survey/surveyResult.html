@@ -66,7 +66,7 @@ text-decoration: none;
                         <a th:if="${i == 0}" th:href="'#list-item-'+${i}">설문지 소개</a>
                         <a th:if="${i != 0}" th:href="'#list-item-'+${i}" th:text="${i} + '번 설문지'"></a>
                     </li>
-                    <li class="breadcrumb-item"><a href="#" style="color: red">신고하기</a></li>
+<!--                    <li class="breadcrumb-item"><a href="#" style="color: red">신고하기</a></li>-->
                 </ol>
             </nav>
         </div>
@@ -192,22 +192,20 @@ text-decoration: none;
 <script>
 function deleteSurvey(value){
     let surveyNo = $(value).val();
-    alert(surveyNo);
     if (confirm('정말로 이 설사를 삭제하시겠습니까?')){
         $.ajax({
             type: "POST",
             url: '/survey/delete',
             data: {surveyNo : surveyNo},
-            success: function (response) {
-                if (response) {
+            success: function (data, status, xhr) {
+                if (data){
                     alert('삭제되었습니다.');
                     window.location.href='/survey/list';
-                } else {
-                    alert('유효한 설문지가 아닙니다.');
-                    window.location.href='/survey/list';
+                }else{
+                    alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
                 }
             },
-            error: function (error) {
+            error: function (xhr, status, error) {
                 alert('잠시 후 다시 시도해주세요. \n 문제가 지속되면 관리자에게 문의해주세요.');
             },
         });
