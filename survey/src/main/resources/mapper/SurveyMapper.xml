@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tys.survey.repository.SurveyRepository">
+
+    <sql id="searchSql">
+        WHERE si.SURVEY_PUBLIC = 'Y'
+        <if test="searchType != null and searchContent != null and searchContent != ''">
+            <if test="searchType == 0">
+                AND CONCAT(m.MEMBER_NICKNAME, si.SURVEY_TITLE, si.SURVEY_DATE, si.SURVEY_END_DATE) LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+            <if test="searchType == 1">
+                AND m.MEMBER_NICKNAME LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+            <if test="searchType == 2">
+                AND si.SURVEY_TITLE LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+            <if test="searchType == 3">
+                AND si.SURVEY_DATE LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+            <if test="searchType == 4">
+                AND si.SURVEY_END_DATE LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+        </if>
+    </sql>
+
+    <sql id="surveyInfoSql">
+        SELECT  m.MEMBER_NO, m.MEMBER_NICKNAME ,si.*
+        FROM SURVEY_INFO si
+        INNER JOIN `MEMBER` m ON si.MEMBER_NO = m.MEMBER_NO
+        WHERE SURVEY_NO = #{surveyNo} AND SURVEY_PUBLIC = 'Y'
+    </sql>
+
+    <sql id="surveyListSql">
+        SELECT  m.MEMBER_NO, m.MEMBER_NICKNAME ,si.*
+        FROM SURVEY_INFO si
+        INNER JOIN `MEMBER` m ON si.MEMBER_NO = m.MEMBER_NO
+        WHERE si.SURVEY_PUBLIC = 'Y'
+    </sql>
+
+    <insert id="saveSurveyInfo" parameterType="SurveyInfoDTO" useGeneratedKeys="true" keyProperty="surveyNo">
+        INSERT INTO tys.SURVEY_INFO
+        (MEMBER_NO, SURVEY_TITLE, SURVEY_COUNT, THUMBNAIL_NAME, THUMBNAIL_RENAME, THUMBNAIL_PATH
+        , SURVEY_PUBLIC, SURVEY_HIT, SURVEY_DATE, SURVEY_END_DATE, SURVEY_WRITE_TIME, RESULT_COUNT)
+        VALUES
+        (#{memberNo}, #{surveyTitle}, #{surveyCount}, #{thumbnailName}, #{thumbnailRename}, #{thumbnailPath}
+        , DEFAULT, DEFAULT, DEFAULT, #{surveyEndDate}, #{surveyWriteTime}, DEFAULT)
+    </insert>
+
+    <insert id="saveQuestion" parameterType="SurveyInfoDTO">
+        INSERT INTO QUESTION
+        (SURVEY_NO, QUESTION_SEQ, QUESTION_TITLE, QUESTION_FILE_NAME, QUESTION_RENAME, QUESTION_PATH
+        , ANSWER1, ANSWER2, ANSWER3, ANSWER4, ANSWER5)
+        VALUES
+        <foreach collection="questionList" item="question" separator=",">
+        (#{surveyNo}, #{question.questionSeq}, #{question.questionTitle}, #{question.questionFileName}, #{question.questionRename}, #{question.questionPath}
+        , #{question.answer1}, #{question.answer2}, #{question.answer3}, #{question.answer4}, #{question.answer5})
+        </foreach>
+    </insert>
+
+    <insert id="saveResult" parameterType="SurveyFormDTO">
+        INSERT INTO SURVEY_RESULT
+        (SURVEY_NO, QUESTION_NO, ANSWER_NO, MEMBER_NO, RESULT_DATE)
+        VALUES
+        <foreach collection="surveyFormList" item="result" separator=",">
+            (#{result.surveyNo}, #{result.questionNo}, #{result.answerNo}, #{result.memberNo}, #{result.resultDate})
+        </foreach>
+    </insert>
+
+    <update id="updateSurveyInfo" parameterType="SurveyFormDTO">
+        UPDATE SURVEY_INFO
+        SET RESULT_COUNT = RESULT_COUNT + 1
+        WHERE SURVEY_NO = #{surveyNo}
+    </update>
+
+    <update id="updateHit" parameterType="int">
+        UPDATE SURVEY_INFO
+        SET SURVEY_HIT = SURVEY_HIT + 1
+        WHERE SURVEY_NO = #{surveyNo}
+    </update>
+
+    <delete id="deleteSurvey" parameterType="int">
+        DELETE FROM SURVEY_INFO
+        WHERE SURVEY_NO = #{surveyNo}
+    </delete>
+
+    <select id="getCount" parameterType="PageInfo" resultType="int">
+        SELECT COUNT(*)
+        FROM SURVEY_INFO si
+        INNER JOIN `MEMBER` m ON si.MEMBER_NO = m.MEMBER_NO
+        <include refid="searchSql"/>
+    </select>
+
+    <select id="getList" parameterType="PageInfo" resultType="SurveyDTO">
+        SELECT ROW_NUMBER() OVER (ORDER BY si.SURVEY_NO DESC) AS NUM, m.MEMBER_NICKNAME, si.*
+        FROM SURVEY_INFO si
+        INNER JOIN `MEMBER` m ON si.MEMBER_NO = m.MEMBER_NO
+        <include refid="searchSql"/>
+        LIMIT #{offset},#{pageLimit}
+    </select>
+
+    <select id="duplicateVote" resultType="int">
+        SELECT COUNT(*) AS COUNT
+        FROM SURVEY_RESULT
+        WHERE SURVEY_NO = #{surveyNo} AND MEMBER_NO = #{memberNo}
+    </select>
+
+    <resultMap id="detailResultMap" type="SurveyDTO">
+        <id property="surveyNo" column="SURVEY_NO"/>
+        <collection property="questionList" column="SURVEY_NO" select="getQuestionList" javaType="arraylist"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="int" resultMap="detailResultMap">
+        <include refid="surveyInfoSql"/>
+    </select>
+
+    <select id="getQuestionList" parameterType="int" resultType="QuestionDTO">
+        SELECT  q.QUESTION_NO ,q.QUESTION_TITLE ,q.QUESTION_PATH,q.QUESTION_SEQ,q.ANSWER1 ,q.ANSWER2 ,q.ANSWER3 ,q.ANSWER4 ,q.ANSWER5 ,
+                SUM(CASE WHEN sr.ANSWER_NO = 1 THEN 1 ELSE 0 END) AS answer1_Count,
+                SUM(CASE WHEN sr.ANSWER_NO = 2 THEN 1 ELSE 0 END) AS answer2_Count,
+                SUM(CASE WHEN sr.ANSWER_NO = 3 THEN 1 ELSE 0 END) AS answer3_Count,
+                SUM(CASE WHEN sr.ANSWER_NO = 4 THEN 1 ELSE 0 END) AS answer4_Count,
+                SUM(CASE WHEN sr.ANSWER_NO = 5 THEN 1 ELSE 0 END) AS answer5_Count
+        FROM QUESTION q
+        LEFT OUTER JOIN SURVEY_RESULT sr ON q.QUESTION_NO = sr.QUESTION_NO
+        WHERE q.SURVEY_NO = #{surveyNo}
+        GROUP BY q.QUESTION_NO, q.QUESTION_TITLE, q.QUESTION_PATH, q.QUESTION_SEQ, q.ANSWER1, q.ANSWER2, q.ANSWER3, q.ANSWER4, q.ANSWER5
+    </select>
+
+    <resultMap id="mainResultMap" type="MainDTO">
+        <id property="surveyCount" column="SURVEY_NO"/>
+        <collection property="highViews" column="SURVEY_NO" select="getHighViews" javaType="arraylist"/>
+        <collection property="popularViews" column="SURVEY_NO" select="getPopularViews" javaType="arraylist"/>
+        <collection property="latelySurvey" column="SURVEY_NO" select="getLatelySurvey" javaType="arraylist"/>
+    </resultMap>
+
+    <select id="getMainSurveyList" resultMap="mainResultMap">
+        SELECT COUNT(SURVEY_NO) AS SURVEY_NO
+        FROM SURVEY_INFO
+    </select>
+
+    <select id="getHighViews" resultType="SurveyDTO">
+        <include refid="surveyListSql"/>
+        ORDER BY si.SURVEY_HIT DESC,si.SURVEY_END_DATE DESC,si.SURVEY_NO DESC
+        LIMIT 5
+    </select>
+
+    <select id="getPopularViews" resultType="SurveyDTO">
+        <include refid="surveyListSql"/>
+        ORDER BY si.RESULT_COUNT  DESC,si.SURVEY_HIT DESC,si.SURVEY_END_DATE DESC,si.SURVEY_NO DESC
+        LIMIT 5
+    </select>
+
+    <select id="getLatelySurvey" resultType="SurveyDTO">
+        <include refid="surveyListSql"/>
+        ORDER BY si.SURVEY_WRITE_TIME  DESC, si.SURVEY_NO DESC
+        LIMIT 5
+    </select>
+
+    <select id="getFileList" resultType="string">
+        SELECT THUMBNAIL_RENAME
+        FROM SURVEY_INFO
+        WHERE SURVEY_NO = #{surveyNo}
+        <if test='loginMember.memberRole == "G"'>
+            AND MEMBER_NO = #{loginMember.memberNo}
+        </if>
+
+        UNION
+
+        SELECT QUESTION_RENAME
+        FROM QUESTION
+        WHERE SURVEY_NO = #{surveyNo}
+    </select>
+
+</mapper>
