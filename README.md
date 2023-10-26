@@ -35,4 +35,5 @@
 ## 화면정의서
 
 ## ERDiagram
+<img width="979" alt="설사최종db" src="https://github.com/leejh-96/survey/assets/115613811/e1b554ca-cc94-43a2-8248-9e92b8e00c75">
 
