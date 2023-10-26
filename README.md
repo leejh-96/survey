@@ -12,7 +12,7 @@
 ### 개발 환경
 * `IntelliJ` `Visual Studio Code` `GitHub` `Sourcetree` `dbeaver`
 ### 인프라
-* `Aws ec2` `Aws s3` `Aws rds`
+* `AWS EC2` `AWS S3` `AWS RDS`
 ### 사용기술
 * Frontend - 
 `HTML` `CSS` `JavaScript` `jQuery` `Bootstrap 4`
@@ -24,4 +24,8 @@
 * `Gradle`
 ### 기타
 * `Postman`
+
+## 화면정의서
+
+## ERDiagram
 
