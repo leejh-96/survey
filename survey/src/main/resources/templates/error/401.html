@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <link th:href="@{/css/navbar.css}" rel="stylesheet">
+</head>
+<body>
+<th:block th:replace="fragments/navbar.html::navbarFragment"/>
+<div class="container">
+    <div style="text-align: center">
+      <p>해당 리소스에 접근하려면 인증이 필요합니다.</p>
+      <p>다음을 확인하세요.</p>
+      <ul>
+        <li>올바른 자격 증명을 제공하세요.</li>
+        <li>권한이 부여된 사용자만 접근할 수 있습니다.</li>
+      </ul>
+    </div>
+</div>
+<footer>
+  <div class="container">
+    <div class="blank_div"></div>
+    <h3>TAKE YOUR SURVEY!</h3>
+    <div class="blank_div"></div>
+  </div>
+</footer>
+</body>
+</html>

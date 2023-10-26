@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <link th:href="@{/css/navbar.css}" rel="stylesheet">
+</head>
+<body>
+<th:block th:replace="fragments/navbar.html::navbarFragment"/>
+<div class="container">
+    <div style="text-align: center">
+        <p>서버에서 오류가 발생했습니다.</p>
+        <p>문제를 해결하는 데 필요한 조치</p>
+        <ol>
+            <li>잠시 후 다시 시도해 보세요.</li>
+            <li>문제가 계속되면 관리자에게 문의하세요.</li>
+        </ol>
+        <p>문의하기: sbxl960705@gmail.com</p>
+    </div>
+</div>
+<footer>
+    <div class="container">
+        <div class="blank_div"></div>
+        <h3>TAKE YOUR SURVEY!</h3>
+        <div class="blank_div"></div>
+    </div>
+</footer>
+</body>
+</html>
