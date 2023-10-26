@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tys.survey.repository.NoticeRepository">
+
+    <sql id="searchSql">
+        <if test="searchType != null and searchContent != null and searchContent != ''">
+            <if test="searchType == 0">
+                AND CONCAT(m.MEMBER_NICKNAME, b.BOARD_TITLE, b.BOARD_DATE) LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+            <if test="searchType == 1">
+                AND m.MEMBER_NICKNAME LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+            <if test="searchType == 2">
+                AND b.BOARD_TITLE LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+            <if test="searchType == 3">
+                AND b.BOARD_DATE LIKE CONCAT('%', #{searchContent}, '%')
+            </if>
+        </if>
+    </sql>
+
+    <insert id="save" parameterType="NoticeFormDTO">
+        INSERT INTO BOARD
+        (BC_NO, MEMBER_NO, BOARD_TITLE, BOARD_CONTENT, BOARD_DATE, BOARD_UPDATE, BOARD_WRITE_TIME, BOARD_HIT, BOARD_ANSWER_STATUS, BOARD_PUBLIC)
+        VALUES
+        (1, #{memberNo}, #{boardTitle}, #{boardContent}, curdate(), DEFAULT, #{boardWriteTime}, DEFAULT, NULL, 'Y')
+    </insert>
+
+    <update id="updateHit" parameterType="int">
+        UPDATE BOARD
+        SET BOARD_HIT = BOARD_HIT + 1
+        WHERE BOARD_NO = #{boardNo}
+    </update>
+
+    <update id="updateNotice" parameterType="NoticeFormDTO">
+        UPDATE BOARD
+        SET BOARD_TITLE = #{boardTitle},
+            BOARD_CONTENT = #{boardContent},
+            BOARD_DATE = curdate(),
+            BOARD_WRITE_TIME = #{boardWriteTime}
+        WHERE BC_NO = 1 AND MEMBER_NO = #{memberNo} AND BOARD_NO = #{boardNo}
+    </update>
+
+    <delete id="deleteNotice" parameterType="int">
+        DELETE FROM BOARD
+        WHERE BOARD_NO = #{boardNo}
+    </delete>
+
+    <select id="getCount" parameterType="PageInfo" resultType="int">
+        SELECT COUNT(*) as COUNT
+        FROM BOARD b
+        INNER JOIN `MEMBER` m ON b.MEMBER_NO = m.MEMBER_NO
+        WHERE BC_NO = 1 AND BOARD_PUBLIC = 'Y'
+        <include refid="searchSql"/>
+    </select>
+
+    <select id="getList" parameterType="PageInfo" resultType="NoticeListDTO">
+        SELECT ROW_NUMBER() OVER (ORDER BY b.BOARD_WRITE_TIME DESC) AS NUM, m.MEMBER_NICKNAME ,
+               b.BOARD_NO ,b.BOARD_TITLE ,b.BOARD_DATE ,b.BOARD_WRITE_TIME ,b.BOARD_HIT
+        FROM BOARD b
+        INNER JOIN `MEMBER` m ON b.MEMBER_NO = m.MEMBER_NO
+        WHERE BC_NO = 1 AND BOARD_PUBLIC = 'Y'
+        <include refid="searchSql"/>
+        LIMIT #{offset},#{pageLimit}
+    </select>
+
+    <select id="getDetail" parameterType="int" resultType="NoticeListDTO">
+        SELECT b.BOARD_NO, m.MEMBER_NICKNAME , b.BOARD_TITLE, b.BOARD_CONTENT, b.BOARD_CONTENT, b.BOARD_DATE, b.BOARD_UPDATE, b.BOARD_WRITE_TIME, b.BOARD_HIT
+        FROM BOARD b
+        INNER JOIN `MEMBER` m ON b.MEMBER_NO = m.MEMBER_NO
+        WHERE b.BC_NO = 1 AND b.BOARD_PUBLIC = 'Y' AND b.BOARD_NO = #{boardNo}
+    </select>
+
+    <select id="getMainNoticeList" resultType="NoticeListDTO">
+        SELECT m.MEMBER_NICKNAME ,b.BOARD_NO ,b.BOARD_TITLE ,b.BOARD_DATE ,b.BOARD_WRITE_TIME ,b.BOARD_HIT
+        FROM BOARD b
+        INNER JOIN `MEMBER` m ON b.MEMBER_NO = m.MEMBER_NO
+        WHERE BC_NO = 1 AND BOARD_PUBLIC = 'Y'
+        ORDER BY BOARD_WRITE_TIME DESC
+        LIMIT 5
+    </select>
+
+</mapper>
