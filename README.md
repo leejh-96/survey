@@ -12,8 +12,8 @@
 * 총 1명(백엔드)
 ### 개발기능
 * 로그인, 회원가입(이메일 인증), 공지사항(등록,수정,리스트,삭제), 설문(등록,삭제,리스트,결과)
-### 개발 환경
-* `IntelliJ` `Visual Studio Code` `GitHub` `Sourcetree` `dbeaver`
+### 개발 TOOLS
+* `IntelliJ` `Visual Studio Code` `GitHub` `Sourcetree` `DBeaver`
 ### 인프라
 * `AWS EC2` `AWS S3` `AWS RDS`
 ### 사용기술
