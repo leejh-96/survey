@@ -35,7 +35,26 @@
 * 관리자
 ![TYS(admin) (1)](https://github.com/leejh-96/survey/assets/115613811/f28f1b9c-c4a7-4db5-bf82-003843202cc6)
 
-## 화면정의서
+## 화면기획서
+* 로그인
+![TYS(take your survey)  로그인-로그아웃](https://github.com/leejh-96/survey/assets/115613811/951d5fe7-4e90-471b-abe3-387df5f56d37)
+* 회원가입
+![TYS(take your survey)  회원가입](https://github.com/leejh-96/survey/assets/115613811/c72a2f1e-f8ba-44be-a59f-9373a196b334)
+* 설사 메인
+![TYS(take your survey)  설사 메인](https://github.com/leejh-96/survey/assets/115613811/3bceb671-3755-4637-87e0-a882b91567c0)
+* 설사 만들기
+![TYS(take your survey)  설문만들기](https://github.com/leejh-96/survey/assets/115613811/4429e0bc-3ef4-4731-9149-27051ace0c94)
+* 설사 참여하기
+![TYS(take your survey)  설문참여하기](https://github.com/leejh-96/survey/assets/115613811/4e4f7b1a-a91d-4bb8-97c2-fe973908a61d)
+* 설사 상세보기 및 결과보기
+![TYS(take your survey)  설사 상세보기](https://github.com/leejh-96/survey/assets/115613811/70aa6188-87cd-4a62-9084-86f894f887dd)
+![TYS(take your survey)  설사 결과보기](https://github.com/leejh-96/survey/assets/115613811/dc1ce2ba-31e9-4021-992b-c30afa6263d3)
+* 공지사항 리스트
+![TYS(take your survey)  공지사항](https://github.com/leejh-96/survey/assets/115613811/085f3611-3980-4772-be03-02ffa9fc6148)
+* 공지사항 등록
+![TYS(take your survey)  공지사항 글쓰기](https://github.com/leejh-96/survey/assets/115613811/1d3a489f-e77b-4531-9c5b-e10c5195419f)
+* 공지사항 상세보기
+![TYS(take your survey)  공지사항 상세보기](https://github.com/leejh-96/survey/assets/115613811/c993b4c1-68b1-46b1-8fd4-dcd16c121315)
 
 ## ERDiagram
 <img width="979" alt="설사최종db" src="https://github.com/leejh-96/survey/assets/115613811/e1b554ca-cc94-43a2-8248-9e92b8e00c75">
