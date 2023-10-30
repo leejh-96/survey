@@ -36,6 +36,7 @@
 ![TYS(admin) (1)](https://github.com/leejh-96/survey/assets/115613811/f28f1b9c-c4a7-4db5-bf82-003843202cc6)
 
 ## 화면기획서
+* ※기획과 결과물에 차이가 있을 수 있습니다.
 * 로그인
 ![TYS(take your survey)  로그인-로그아웃](https://github.com/leejh-96/survey/assets/115613811/951d5fe7-4e90-471b-abe3-387df5f56d37)
 * 회원가입
