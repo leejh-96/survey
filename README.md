@@ -64,73 +64,73 @@
 * 중복 코드
 * 공지사항 서비스와 설문조사 서비스의 상대적 시간을 업데이트 시켜 나타내는 코드에서 중복 코드가 발생했습니다.<br>
 공지사항 서비스
-  ```java
-  private List<NoticeListDTO> updateTime(List<NoticeListDTO> list) {
-          for (NoticeListDTO dto : list) {
-              dto.setTime(timeSettings(dto));
-          }
-          return list;
+```java
+private List<NoticeListDTO> updateTime(List<NoticeListDTO> list) {
+    for (NoticeListDTO dto : list) {
+        dto.setTime(timeSettings(dto));
     }
+    return list;
+}
 
-    private String timeSettings(NoticeListDTO dto) {
-        LocalDateTime boardWriteTime = dto.getBoardWriteTime();
-        LocalDateTime now = LocalDateTime.now();
-        Duration between = Duration.between(boardWriteTime, now);
-        long seconds = between.getSeconds();
-        long minutes = between.toMinutes();
-        long hours = between.toHours();
-        long days = between.toDays();
-        String timeAgo = "";
-        if (days > 0) {
-            timeAgo = days + "일 전";
-        } else if (hours > 0) {
-            timeAgo = hours + "시간 전";
-        } else if (minutes > 0) {
-            timeAgo = minutes + "분 전";
-        } else {
-            timeAgo = seconds + "초 전";
-        }
-        return timeAgo;
+private String timeSettings(NoticeListDTO dto) {
+    LocalDateTime boardWriteTime = dto.getBoardWriteTime();
+    LocalDateTime now = LocalDateTime.now();
+    Duration between = Duration.between(boardWriteTime, now);
+    long seconds = between.getSeconds();
+    long minutes = between.toMinutes();
+    long hours = between.toHours();
+    long days = between.toDays();
+    String timeAgo = "";
+    if (days > 0) {
+        timeAgo = days + "일 전";
+    } else if (hours > 0) {
+        timeAgo = hours + "시간 전";
+    } else if (minutes > 0) {
+        timeAgo = minutes + "분 전";
+    } else {
+        timeAgo = seconds + "초 전";
     }
-  ```
+    return timeAgo;
+}
+```
   
   설문조사 서비스
 ```java
-  private List<SurveyDTO> updateTimeAndStatus(List<SurveyDTO> list) {
-        for (SurveyDTO dto : list) {
-            timeAndStatus(dto);
-        }
-        return list;
+private List<SurveyDTO> updateTimeAndStatus(List<SurveyDTO> list) {
+    for (SurveyDTO dto : list) {
+        timeAndStatus(dto);
     }
+    return list;
+}
 
-    private void timeAndStatus(SurveyDTO dto) {
-        LocalDateTime surveyWriteTime = dto.getSurveyWriteTime();
-        LocalDateTime now = LocalDateTime.now();
-        String timeAgo = timeSettings(surveyWriteTime, now);
-        dto.setTime(timeAgo);
+private void timeAndStatus(SurveyDTO dto) {
+    LocalDateTime surveyWriteTime = dto.getSurveyWriteTime();
+    LocalDateTime now = LocalDateTime.now();
+    String timeAgo = timeSettings(surveyWriteTime, now);
+    dto.setTime(timeAgo);
 
-        LocalDate surveyEndDate = dto.getSurveyEndDate();
-        LocalDate endDate = LocalDate.now();
-        boolean status = surveyEndDate.isBefore(endDate);
-        dto.setStatus(status);
+    LocalDate surveyEndDate = dto.getSurveyEndDate();
+    LocalDate endDate = LocalDate.now();
+    boolean status = surveyEndDate.isBefore(endDate);
+    dto.setStatus(status);
+}
+
+private String timeSettings(LocalDateTime surveyWriteTime, LocalDateTime now) {
+    Duration between = Duration.between(surveyWriteTime, now);
+    long seconds = between.getSeconds();
+    long minutes = between.toMinutes();
+    long hours = between.toHours();
+    long days = between.toDays();
+    String timeAgo = "";
+    if (days > 0) {
+        timeAgo = days + "일 전";
+    } else if (hours > 0) {
+        timeAgo = hours + "시간 전";
+    } else if (minutes > 0) {
+        timeAgo = minutes + "분 전";
+    } else {
+        timeAgo = seconds + "초 전";
     }
-
-    private String timeSettings(LocalDateTime surveyWriteTime, LocalDateTime now) {
-        Duration between = Duration.between(surveyWriteTime, now);
-        long seconds = between.getSeconds();
-        long minutes = between.toMinutes();
-        long hours = between.toHours();
-        long days = between.toDays();
-        String timeAgo = "";
-        if (days > 0) {
-            timeAgo = days + "일 전";
-        } else if (hours > 0) {
-            timeAgo = hours + "시간 전";
-        } else if (minutes > 0) {
-            timeAgo = minutes + "분 전";
-        } else {
-            timeAgo = seconds + "초 전";
-        }
-        return timeAgo;
-    }
+    return timeAgo;
+}
 ```
