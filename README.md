@@ -91,7 +91,7 @@
             timeAgo = seconds + "초 전";
         }
         return timeAgo;
-    }
+    }`
   설문조사 서비스
   ```java
   private List<SurveyDTO> updateTimeAndStatus(List<SurveyDTO> list) {
@@ -130,4 +130,4 @@
             timeAgo = seconds + "초 전";
         }
         return timeAgo;
-    }
+    }`
