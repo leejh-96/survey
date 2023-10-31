@@ -64,7 +64,7 @@
 * 중복 코드
 * 공지사항 서비스와 설문조사 서비스의 상대적 시간을 업데이트 시켜 나타내는 코드에서 중복 코드가 발생했습니다.<br>
 공지사항 서비스
-  ```java
+  ```
   private List<NoticeListDTO> updateTime(List<NoticeListDTO> list) {
           for (NoticeListDTO dto : list) {
               dto.setTime(timeSettings(dto));
@@ -91,9 +91,9 @@
             timeAgo = seconds + "초 전";
         }
         return timeAgo;
-    }`
+    }```
   설문조사 서비스
-  ```java
+  ```
   private List<SurveyDTO> updateTimeAndStatus(List<SurveyDTO> list) {
         for (SurveyDTO dto : list) {
             timeAndStatus(dto);
@@ -130,4 +130,4 @@
             timeAgo = seconds + "초 전";
         }
         return timeAgo;
-    }`
+    }```
