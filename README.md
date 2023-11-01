@@ -69,10 +69,10 @@
     
     ```java
     private List<NoticeListDTO> updateTime(List<NoticeListDTO> list) {
-	for (NoticeListDTO dto : list) {
-	dto.setTime(timeSettings(dto));
-	}
-	return list;
+		for (NoticeListDTO dto : list) {
+		    dto.setTime(timeSettings(dto));
+		}
+		return list;
     }
     
     private String timeSettings(NoticeListDTO dto) {
