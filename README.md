@@ -69,10 +69,10 @@
     
     ```java
     private List<NoticeListDTO> updateTime(List<NoticeListDTO> list) {
-    		for (NoticeListDTO dto : list) {
-    		dto.setTime(timeSettings(dto));
-    		}
-    		return list;
+	for (NoticeListDTO dto : list) {
+	dto.setTime(timeSettings(dto));
+	}
+	return list;
     }
     
     private String timeSettings(NoticeListDTO dto) {
@@ -155,7 +155,7 @@ public abstract class TimeUpdateService<T> {
 }
 ```
 
-1. **`getWriteTime`** , **`setTime`** 추상 메서드
+2. **`getWriteTime`** , **`setTime`** 추상 메서드
     - 추상 메서드 사용 이유
     
     기존 코드의 메서드는 특정 DTO 타입에 종속되었고, 필드에 직접 접근하여 시간 업데이트 로직을 수행했습니다. 이로 인해 해당 DTO 타입에 종속되어 다양한 DTO 타입에 대한 사용이 어려웠습니다.
@@ -163,7 +163,7 @@ public abstract class TimeUpdateService<T> {
     이 클래스는 제네릭 타입 매개변수 사용하여, 다양한 DTO 타입에 대해 유연하게 동작할 수 있도록 설계 했지만, 제네릭 타입 매개변수의 사용으로 타입에 대한 구체적인 정보를 알 수 없어 구체적인 DTO 필드에 접근 할 수 없었습니다.
     
     따라서, 특정 타입에 종속되지 않으면서 필드에 접근 할 수 있는 방법을 고민하게 되었고,
-    **`getWriteTime`**과 **`setTime`**이라는 추상 메서드를 선언하여 이 클래스를 상속하는 서브 클래스에서 메서드를 구현하도록 했습니다. 이렇게 함으로써 각 서비스 클래스에서는 자신의 DTO 타입에 맞게 **`getWriteTime`**을 구현하여 해당 DTO 타입의 필드에 접근할 수 있고, **`setTime`**을 구현하여 시간 업데이트 결과를 저장할 수 있게 되었습니다. 
+    `getWriteTime`과 `setTime`이라는 추상 메서드를 선언하여 이 클래스를 상속하는 서브 클래스에서 메서드를 구현하도록 했습니다. 이렇게 함으로써 각 서비스 클래스에서는 자신의 DTO 타입에 맞게 `getWriteTime`을 구현하여 해당 DTO 타입의 필드에 접근할 수 있고, `setTime`을 구현하여 시간 업데이트 결과를 저장할 수 있게 되었습니다. 
     
     이를 통해 구체적인 클래스 타입에 종속되지 않고 다양한 클래스 타입에 대해 동작할 수 있도록 하면서, 동시에 시간 업데이트 로직과 저장 동작을 분리하여 유지 보수와 확장성 또한 향상 됨을 느낄 수 있었습니다.
     
@@ -171,14 +171,14 @@ public abstract class TimeUpdateService<T> {
 ```java
 public abstract class TimeUpdateService<T> {
 
-		protected abstract LocalDateTime getWriteTime(T dto);
+	protected abstract LocalDateTime getWriteTime(T dto);
 
-		protected abstract void setTime(T dto, String timeAgo);
+	protected abstract void setTime(T dto, String timeAgo);
 
 }
 ```
 
-1. **`updateItemTime`** 메서드
+3. **`updateItemTime`** 메서드
     - **`updateItemTime`** 메서드는 각 `T` 타입에 대한 시간 업데이트를 수행합니다.
     `getWriteTime` 을 통해 시간을 가져오고 `setTime` 을 통해 업데이트 시간을 설정합니다.
 
@@ -190,8 +190,8 @@ public void updateItemTime(T dto) {
 }
 ```
 
-1. **`updateListTime`** 메서드
-    - **`updateListTime`** 메서드는 리스트 내의 각 **`T`** 타입에 내부적으로 **`updateItemTime`**을 호출하여 시간 업데이트를 수행합니다.
+4. **`updateListTime`** 메서드
+    - **`updateListTime`** 메서드는 리스트 내의 각 **`T`** 타입에 내부적으로 `updateItemTime`을 호출하여 시간 업데이트를 수행합니다.
 
 ```java
 public void updateListTime(List<T> list) {
@@ -201,8 +201,9 @@ public void updateListTime(List<T> list) {
 }
 ```
 
-1. `getTimeAgo` 메서드
-    - **`getTimeAgo`** 메서드는 현재 시간과 매개변수 **`LocalDateTime`** 사이의 시간 간격을 계산하여, 그에 따른 `몇 일 전`, `몇 시간 전`, `몇 분 전` 또는 `몇 초 전`과 같은 문자열을 생성하는 역할을 합니다.
+5. `getTimeAgo` 메서드
+    - **`getTimeAgo`** 메서드는 현재 시간과 매개변수 **`LocalDateTime`** 사이의 시간 간격을 계산하여,<br>
+    그에 따른 `몇 일 전`, `몇 시간 전`, `몇 분 전` 또는 `몇 초 전`과 같은 문자열을 생성하는 역할을 합니다.
     - **`updateItemTime`** 메서드에서 내부적으로 호출되며, 리턴된 문자열은 `setTime` 메서드를 
     통해 각 DTO 에 저장됩니다.
 
@@ -223,7 +224,7 @@ private String getTimeAgo(LocalDateTime time) {
 }
 ```
 
-1. 전체 코드
+6. 전체 코드
 
 ```java
 public abstract class TimeUpdateService<T> {
