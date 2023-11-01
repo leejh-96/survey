@@ -61,7 +61,9 @@
 <img width="979" alt="설사최종db" src="https://github.com/leejh-96/survey/assets/115613811/e1b554ca-cc94-43a2-8248-9e92b8e00c75">
 
 ## 프로젝트 내용
-공지사항 서비스와 설문조사 서비스의 상대적 시간을 업데이트 시켜 나타내는 코드에서 중복 코드가 발생했습니다.
+### 중복 코드 최소화
+
+공지사항 서비스와 설문조사 서비스의 상대적 시간을 업데이트 시키는 코드에서 중복된 코드를 발견했습니다.
 
 - 공지사항 서비스
     
@@ -110,11 +112,13 @@
         LocalDateTime now = LocalDateTime.now();
         String timeAgo = timeSettings(surveyWriteTime, now);
         dto.setTime(timeAgo);
-    // 이 부분을 제외한 나머지가 모두 동일
+    
+    // 여기부터
         LocalDate surveyEndDate = dto.getSurveyEndDate();
         LocalDate endDate = LocalDate.now();
         boolean status = surveyEndDate.isBefore(endDate);
         dto.setStatus(status);
+    // 여기까지를 제외한 나머지가 중복
     }
     
     private String timeSettings(LocalDateTime surveyWriteTime, LocalDateTime now) {
@@ -138,11 +142,88 @@
     ```
     
 
-설문조사 서비스의 설문조사 작성 날짜와 종료 날짜에 대한 유효 범위 상태 값을 구하는 코드를 제외하고는 모두 동일한 코드입니다.
+설문조사 서비스의 설문조사 작성 날짜와 종료 날짜에 대한 유효 범위 상태 값을 구하는 코드를 제외하고는 중복된 코드입니다.
 
-중복 코드를 유지하면 실수와 버그의 원인이 될 수 있고, 유지 보수 측면에서도 어려워지기 때문에 이 중복 코드를 제거하고 유지 보수 또한 용이하게 하려고 공통 클래스를 도입하여 관리하기로 결정했습니다.
+따라서 이 중복 코드를 제거하고 하나의 클래스로 관리하기 위한 방법을 고민했습니다.
 
-- 공통 클래스
+1. **`TimeUpdateService<T>`** 추상 클래스
+    - **`TimeUpdateService<T>`** 클래스는 여러 서비스 계층 클래스에서 중복되는 시간 업데이트 로직을 추상화하기 위한 클래스입니다.
+    - 제네릭 타입 매개변수를 사용해 여러 다른 DTO 타입을 다룰 수 있도록 설정했습니다.
+
+```java
+public abstract class TimeUpdateService<T> {
+}
+```
+
+1. **`getWriteTime`** , **`setTime`** 추상 메서드
+    - 추상 메서드 사용 이유
+    
+    기존 코드의 메서드는 특정 DTO 타입에 종속되었고, 필드에 직접 접근하여 시간 업데이트 로직을 수행했습니다. 이로 인해 해당 DTO 타입에 종속되어 다양한 DTO 타입에 대한 사용이 어려웠습니다.
+    
+    이 클래스는 제네릭 타입 매개변수 사용하여, 다양한 DTO 타입에 대해 유연하게 동작할 수 있도록 설계 했지만, 제네릭 타입 매개변수의 사용으로 타입에 대한 구체적인 정보를 알 수 없어 구체적인 DTO 필드에 접근 할 수 없었습니다.
+    
+    따라서, 특정 타입에 종속되지 않으면서 필드에 접근 할 수 있는 방법을 고민하게 되었고,
+    **`getWriteTime`**과 **`setTime`**이라는 추상 메서드를 선언하여 이 클래스를 상속하는 서브 클래스에서 메서드를 구현하도록 했습니다. 이렇게 함으로써 각 서비스 클래스에서는 자신의 DTO 타입에 맞게 **`getWriteTime`**을 구현하여 해당 DTO 타입의 필드에 접근할 수 있고, **`setTime`**을 구현하여 시간 업데이트 결과를 저장할 수 있게 되었습니다. 
+    
+    이를 통해 구체적인 클래스 타입에 종속되지 않고 다양한 클래스 타입에 대해 동작할 수 있도록 하면서, 동시에 시간 업데이트 로직과 저장 동작을 분리하여 유지 보수와 확장성 또한 향상 됨을 느낄 수 있었습니다.
+    
+
+```java
+public abstract class TimeUpdateService<T> {
+
+		protected abstract LocalDateTime getWriteTime(T dto);
+
+		protected abstract void setTime(T dto, String timeAgo);
+
+}
+```
+
+1. **`updateItemTime`** 메서드
+    - **`updateItemTime`** 메서드는 각 `T` 타입에 대한 시간 업데이트를 수행합니다.
+    `getWriteTime` 을 통해 시간을 가져오고 `setTime` 을 통해 업데이트 시간을 설정합니다.
+
+```java
+public void updateItemTime(T dto) {
+    LocalDateTime writeTime = getWriteTime(dto);
+    String timeAgo = getTimeAgo(writeTime);
+    setTime(dto, timeAgo);
+}
+```
+
+1. **`updateListTime`** 메서드
+    - **`updateListTime`** 메서드는 리스트 내의 각 **`T`** 타입에 내부적으로 **`updateItemTime`**을 호출하여 시간 업데이트를 수행합니다.
+
+```java
+public void updateListTime(List<T> list) {
+    for (T dto : list) {
+        updateItemTime(dto);
+    }
+}
+```
+
+1. `getTimeAgo` 메서드
+    - **`getTimeAgo`** 메서드는 현재 시간과 매개변수 **`LocalDateTime`** 사이의 시간 간격을 계산하여, 그에 따른 `몇 일 전`, `몇 시간 전`, `몇 분 전` 또는 `몇 초 전`과 같은 문자열을 생성하는 역할을 합니다.
+    - **`updateItemTime`** 메서드에서 내부적으로 호출되며, 리턴된 문자열은 `setTime` 메서드를 
+    통해 각 DTO 에 저장됩니다.
+
+```java
+private String getTimeAgo(LocalDateTime time) {
+    Duration between = Duration.between(time, LocalDateTime.now());
+    String timeAgo;
+    if (between.toDays() > 0) {
+        timeAgo = between.toDays() + "일 전";
+    } else if (between.toHours() > 0) {
+        timeAgo = between.toHours() + "시간 전";
+    } else if (between.toMinutes() > 0) {
+        timeAgo = between.toMinutes() + "분 전";
+    } else {
+        timeAgo = between.getSeconds() + "초 전";
+    }
+    return timeAgo;
+}
+```
+
+1. 전체 코드
 
 ```java
 public abstract class TimeUpdateService<T> {
@@ -151,16 +232,16 @@ public abstract class TimeUpdateService<T> {
 
     protected abstract void setTime(T dto, String timeAgo);
 
-    public void updateListTime(List<T> list){
-        for (T dto : list) {
-            String timeAgo = getTimeAgo(getWriteTime(dto));
-            setTime(dto, timeAgo);
-        }
+    public void updateItemTime(T dto) {
+        LocalDateTime writeTime = getWriteTime(dto);
+        String timeAgo = getTimeAgo(writeTime);
+        setTime(dto, timeAgo);
     }
 
-    public void updateDtoTime(T dto){
-        String timeAgo = getTimeAgo(getWriteTime(dto));
-        setTime(dto, timeAgo);
+    public void updateListTime(List<T> list) {
+        for (T dto : list) {
+            updateItemTime(dto);
+        }
     }
 
     private String getTimeAgo(LocalDateTime time) {
@@ -177,6 +258,5 @@ public abstract class TimeUpdateService<T> {
         }
         return timeAgo;
     }
-
 }
 ```
