@@ -1,5 +1,6 @@
 package com.tys.survey.dto;
 
+import com.tys.survey.commons.TimeUpdatable;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -8,7 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter@Setter
-public class NoticeListDTO {
+public class NoticeListDTO implements TimeUpdatable{
 
     private int num;
 
@@ -31,4 +32,14 @@ public class NoticeListDTO {
     private String time;
 
     private int boardHit;
+
+    @Override
+    public LocalDateTime getCreateTime() {
+        return this.boardWriteTime;
+    }
+
+    @Override
+    public void setCreateTime(String timeAgo) {
+        this.setTime(timeAgo);
+    }
 }

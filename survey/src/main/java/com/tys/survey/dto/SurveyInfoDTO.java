@@ -10,7 +10,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Getter@Setter@Builder
-public class SurveyInfoDTO{
+public class SurveyInfoDTO {
 
     private Integer surveyNo;
 
@@ -39,6 +39,8 @@ public class SurveyInfoDTO{
     private LocalDate surveyEndDate;
 
     private LocalDateTime surveyWriteTime;
+
+    private String time;
 
     private Integer resultCount;
 

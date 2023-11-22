@@ -3,6 +3,8 @@ package com.tys.survey.service;
 import com.tys.survey.commons.PageInfo;
 import com.tys.survey.dto.*;
 import com.tys.survey.repository.SurveyRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,25 +12,24 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class SurveyService {
+
+    private final HitCookieService hitCookieService;
+
+    private final TimeAgoUpdaterService timeUpdateService;
 
     private final FileUploadService fileUploadService;
 
     private final SurveyRepository repository;
 
     private final MessageSource messageSource;
-
-    public SurveyService(FileUploadService fileUploadService, SurveyRepository repository, MessageSource messageSource) {
-        this.fileUploadService = fileUploadService;
-        this.repository = repository;
-        this.messageSource = messageSource;
-    }
 
     @Transactional
     public Map<String,Object> save(Map<String,Object> map, SurveyInfoDTO survey, LoginMemberDTO loginMember) {
@@ -50,16 +51,55 @@ public class SurveyService {
         return createTrueParam(map, survey.getSurveyNo());
     }
 
-//    @Transactional
-//    public boolean deleteSurvey(LoginMemberDTO loginMember, int surveyNo) {
-//        deleteSurveyFiles(repository.getFileList(loginMember,surveyNo));
-//        return repository.deleteSurvey(surveyNo) > 0 ? true : false;
-//    }
-
     @Transactional
     public int deleteSurvey(LoginMemberDTO loginMember, int surveyNo) {
         deleteSurveyFiles(repository.getFileList(loginMember,surveyNo));
         return repository.deleteSurvey(surveyNo);
+    }
+
+    public SurveyDTO getDetail(HttpServletRequest request, HttpServletResponse response, int surveyNo) {
+        String cookieName = surveyNo + "_survey_cookie";
+        if (!hitCookieService.updateHit(request, response, cookieName)){
+            repository.updateHit(surveyNo);
+        }
+        SurveyDTO detail = repository.getDetail(surveyNo);
+        timeUpdateService.updateItemTime(detail);
+        return detail;
+    }
+
+    public int getCount(PageInfo pageInfo) {
+        return repository.getCount(pageInfo);
+    }
+
+    public List<SurveyDTO> getList(PageInfo pageInfo) {
+        List<SurveyDTO> surveyList = repository.getList(pageInfo);
+        timeUpdateService.updateListTime(surveyList);
+        updateStatus(surveyList);
+        return surveyList;
+    }
+
+    public Map<String, Object> duplicateVote(Map<String, Object> map, LoginMemberDTO loginMember, SurveyFormDTO survey) {
+        if (repository.duplicateVote(loginMember.getMemberNo(), survey.getSurveyNo()) != 0){
+            return createFailMsg(map,messageSource.getMessage("isParticipationDuplicate",null, Locale.getDefault()));
+        }
+        return createTrue(map);
+    }
+
+    public MainDTO getMainSurveyList() {
+        MainDTO main = repository.getMainSurveyList();
+        timeUpdateService.updateListTime(main.getHighViews());
+        timeUpdateService.updateListTime(main.getPopularViews());
+        timeUpdateService.updateListTime(main.getLatelySurvey());
+        return main;
+    }
+
+    public Map<String, Object> memberCheck(LoginMemberDTO loginMember) {
+        Map<String, Object> map = new HashMap<>();
+        if (loginMember == null || loginMember.getMemberNo() == null){
+            return createFailMsg(map,messageSource.getMessage("loginRequiredMsg",null, Locale.getDefault()));
+        }
+        return createTrue(map);
+
     }
 
     private SurveyFormDTO createResult(SurveyFormDTO survey, LoginMemberDTO loginMember) {
@@ -108,76 +148,17 @@ public class SurveyService {
         return list;
     }
 
-    public SurveyDTO getDetail(HttpServletRequest request, HttpServletResponse response, int surveyNo) {
-        updateHit(request,response,surveyNo);
-        SurveyDTO detail = repository.getDetail(surveyNo);
-        timeAndStatus(detail);
-        return detail;
-    }
-
-    public int getCount(PageInfo pageInfo) {
-        return repository.getCount(pageInfo);
-    }
-
     private int getMemberNo(LoginMemberDTO loginMember){
         return loginMember != null ? loginMember.getMemberNo() : 2;
     }
 
-    public List<SurveyDTO> getList(PageInfo pageInfo) {
-        return updateTimeAndStatus(repository.getList(pageInfo));
-    }
 
-    private List<SurveyDTO> updateTimeAndStatus(List<SurveyDTO> list) {
-        for (SurveyDTO dto : list) {
-            timeAndStatus(dto);
+
+    private void updateStatus(List<SurveyDTO> surveyList) {
+        for (SurveyDTO dto : surveyList) {
+            boolean status = dto.getSurveyEndDate().isBefore(LocalDate.now());
+            dto.setStatus(status);
         }
-        return list;
-    }
-
-    private void timeAndStatus(SurveyDTO dto) {
-        LocalDateTime surveyWriteTime = dto.getSurveyWriteTime();
-        LocalDateTime now = LocalDateTime.now();
-        String timeAgo = timeSettings(surveyWriteTime, now);
-        dto.setTime(timeAgo);
-
-        LocalDate surveyEndDate = dto.getSurveyEndDate();
-        LocalDate endDate = LocalDate.now();
-        boolean status = surveyEndDate.isBefore(endDate);
-        dto.setStatus(status);
-    }
-
-    private String timeSettings(LocalDateTime surveyWriteTime, LocalDateTime now) {
-        Duration between = Duration.between(surveyWriteTime, now);
-        long seconds = between.getSeconds();
-        long minutes = between.toMinutes();
-        long hours = between.toHours();
-        long days = between.toDays();
-        String timeAgo = "";
-        if (days > 0) {
-            timeAgo = days + "일 전";
-        } else if (hours > 0) {
-            timeAgo = hours + "시간 전";
-        } else if (minutes > 0) {
-            timeAgo = minutes + "분 전";
-        } else {
-            timeAgo = seconds + "초 전";
-        }
-        return timeAgo;
-    }
-
-    public Map<String, Object> duplicateVote(Map<String, Object> map, LoginMemberDTO loginMember, SurveyFormDTO survey) {
-        if (repository.duplicateVote(loginMember.getMemberNo(), survey.getSurveyNo()) != 0){
-            return createFailMsg(map,messageSource.getMessage("isParticipationDuplicate",null, Locale.getDefault()));
-        }
-        return createTrue(map);
-    }
-
-    public MainDTO getMainSurveyList() {
-        MainDTO main = repository.getMainSurveyList();
-        main.setHighViews(updateTimeAndStatus(main.getHighViews()));
-        main.setPopularViews(updateTimeAndStatus(main.getPopularViews()));
-        main.setLatelySurvey(updateTimeAndStatus(main.getLatelySurvey()));
-        return main;
     }
 
     private void deleteSurveyFiles(List<String> fileList) {
@@ -188,35 +169,25 @@ public class SurveyService {
         }
     }
 
-    private void updateHit(HttpServletRequest request, HttpServletResponse response, int surveyNo) {
-        Cookie[] cookies = request.getCookies();
-        String cookieName = surveyNo + "_survey_cookie";
-        boolean status = false;
-        if (cookies != null){
-            for (Cookie c : cookies){
-                if (c.getName().equals(cookieName)){
-                    status = true;
-                    break;
-                }
-            }
-        }
-        if (!status){
-            Cookie cookie = new Cookie(cookieName,"true");
-            cookie.setMaxAge(24 * 60 * 60);
-            response.addCookie(cookie);
-            repository.updateHit(surveyNo);
-        }
-    }
-
-
-    public Map<String, Object> memberCheck(LoginMemberDTO loginMember) {
-        Map<String, Object> map = new HashMap<>();
-        if (loginMember == null || loginMember.getMemberNo() == null){
-            return createFailMsg(map,messageSource.getMessage("loginRequiredMsg",null, Locale.getDefault()));
-        }
-        return createTrue(map);
-
-    }
+//    private void updateHit(HttpServletRequest request, HttpServletResponse response, int surveyNo) {
+//        Cookie[] cookies = request.getCookies();
+//        String cookieName = surveyNo + "_survey_cookie";
+//        boolean status = false;
+//        if (cookies != null){
+//            for (Cookie c : cookies){
+//                if (c.getName().equals(cookieName)){
+//                    status = true;
+//                    break;
+//                }
+//            }
+//        }
+//        if (!status){
+//            Cookie cookie = new Cookie(cookieName,"true");
+//            cookie.setMaxAge(24 * 60 * 60);
+//            response.addCookie(cookie);
+//            repository.updateHit(surveyNo);
+//        }
+//    }
 
     private Map<String, Object> createFailMsg(Map<String, Object> map, String msg){
         map.put("result", false);
@@ -234,4 +205,5 @@ public class SurveyService {
         map.put("result", true);
         return map;
     }
+
 }
