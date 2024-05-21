@@ -34,9 +34,9 @@
 <img width="979" alt="설사최종db" src="https://github.com/leejh-96/survey/assets/115613811/e1b554ca-cc94-43a2-8248-9e92b8e00c75">
 
 ## 핵심 구현내용
-  * - 중복되는 시간 업데이트 비즈니스 로직을 하나의 클래스로 모듈화하는 리팩토링 작업을 진행했습니다.
+  * 중복되는 시간 업데이트 비즈니스 로직을 하나의 클래스로 모듈화하는 리팩토링 작업을 진행했습니다.
 ### **시간 업데이트란?**
-  * - 작성 시간부터 현재 시간의 상대적인 시간을 아래의 화면과 같이( 1초 전 , 1분 전 , 1일 전 ) 제공합니다.
+  * 작성 시간부터 현재 시간의 상대적인 시간을 아래의 화면과 같이( 1초 전 , 1분 전 , 1일 전 ) 제공합니다.
 <img width="830" alt="상대시간업데이트" src="https://github.com/leejh-96/feedsoup/assets/115613811/a6e12d89-d677-46a5-9012-a70b17fe8504">
 
 ### **중복 코드 파악**
@@ -115,7 +115,7 @@ private String timeSettings(NoticeListDTO dto) {
 ```
 
 ### **해결과정**
-* 1) TimeUpdatable 인터페이스 도입
+### **1) TimeUpdatable 인터페이스 도입**
 설문조사와 공지사항에서 사용되는 객체(DTO)들이 시간 데이터를 다루는 경우에 읽어오고 가져옴에 있어서 일관된 표준 방법이 필요했습니다.
 이러한 문제를 해결하고자, 인터페이스를 사용하여 객체(DTO)들이 시간 데이터를 다루는 표준화된 방법을 도입하고자 했습니다.
 ```java
@@ -127,7 +127,8 @@ public interface TimeUpdatable {
 }
 ```
 
-* 2) TimeAgoUpdaterService 클래스 모듈화 제네릭을 사용하여 TimeAgoUpdaterService 클래스의 메서드들이 TimeUpdatable 인터페이스를 구현한 클래스의 객체들에 대해서만 동작하도록 제한함으로써,
+### **2) TimeAgoUpdaterService 클래스 모듈화**
+제네릭을 사용하여 TimeAgoUpdaterService 클래스의 메서드들이 TimeUpdatable 인터페이스를 구현한 클래스의 객체들에 대해서만 동작하도록 제한함으로써,
 잘못된 객체가 사용되는 것을 방지하고자 했습니다.
 ```java
 @Service
@@ -148,7 +149,7 @@ public class TimeAgoUpdaterService {
 }
 ```
 
-* 또한, 설문조사 서비스와 공지사항 서비스의 중복된 메서드를 getTimeAgo 메서드로 모듈화 했습니다.
+또한, 설문조사 서비스와 공지사항 서비스의 중복된 메서드를 getTimeAgo 메서드로 모듈화 했습니다.
 ```java
 @Service
 public class TimeAgoUpdaterService {
@@ -171,7 +172,7 @@ public class TimeAgoUpdaterService {
 }
 ```
 
-* 3) TimeAgoUpdaterService 전체 코드
+### **3) TimeAgoUpdaterService 전체 코드**
 ```java
 @Service
 public class TimeAgoUpdaterService {
@@ -206,7 +207,7 @@ public class TimeAgoUpdaterService {
 }
 ```
 
-* 4) 리팩토링 후기
+### **4) 리팩토링 후기**
  * 유지 보수 단순화 : 중복 코드를 한 곳에서 관리하여 코드 변경이 필요할 때 한 곳만 수정하면 되므로 유지 보수가 단순화되고, 효율적으로 코드를 관리 할 수 있도록 되었습니다.
  * 재사용성 향상 및 일관성 유지 : TimeAgoUpdaterService를 이용하면 다양한 클래스에서 시간 업데이트 기능을 재사용 할 수 있게 되었고, 다양한 클래스에서 동일한 방식으로 시간을 처리하여 일관성을 유지할 수 있게 되었습니다.
  * 타입 제한을 통한 안정성 보장: TimeAgoUpdaterService는 TimeUpdatable 인터페이스를 구현한 클래스에서만 동작함으로써 안정성을 확보하고 예기치 않은 오류를 사전에 방지할 수 있게 되었습니다.
